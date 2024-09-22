@@ -1,0 +1,19 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}MyApp{% endblock %}</title>
+    <link rel="stylesheet" href="{% static 'css/header.css' %}">
+</head>
+<body>
+    {% include 'navbar/header.html' %}
+    <main>{% block content %}{% endblock %}
+
+    <p>This is home page</p>
+        
+    </main>
+    <script src="{% static 'js/header.js' %}"></script>
+</body>
+</html>

@@ -1,0 +1,91 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="stylesheet" href="{% static 'css/header.css' %}">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script src="{% static 'user/js/header.js' %}"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <header class="header">
+        <nav class="nav-container">
+            <div class="nav-logo">
+                <a href="{% url 'root' %}" class="nav-logo-link">
+                    <span class="nav-logo-icon"><i class="fas fa-globe"></i></span> MyApp
+                </a>
+            </div>
+
+            <!-- Mobile Hamburger Icon -->
+            <button class="mobile-menu-btn" onclick="toggleMobileMenu()">
+                <i class="fas fa-bars" ></i>  <!-- Hamburger icon -->
+            </button>
+
+            <!-- Desktop Links -->
+            <div class="desktop-links">
+                <a href="{% url 'dashboard' %}" class="nav-link">Home</a>
+                {# Uncomment these when needed #}
+                {# <a href="{% url 'about' %}" class="nav-link">About</a> #}
+                {# <a href="{% url 'pricing' %}" class="nav-link">Pricing</a> #}
+                {# <a href="{% url 'contact' %}" class="nav-link">Contact</a> #}
+            </div>
+
+            <!-- Desktop Sign In and Try Out buttons -->
+            <div class="desktop-buttons">
+                {% if user.is_authenticated %}
+                    <span>Welcome, {{ user.username }}!</span>
+                    <a href="{% url 'logout_page' %}">
+                        <button class="sign-in-btn">Logout</button>
+                    </a>
+                {% else %}
+                    <a href="{% url 'login_page' %}">
+                        <button class="sign-in-btn">Sign In</button>
+                    </a>
+                    <a href="{% url 'signup_page' %}">
+                        <button class="try-out-btn">Try Out X ↗</button>
+                    </a>
+                {% endif %}
+            </div>
+        </nav>
+
+        <!-- Mobile Menu -->
+        <div id="mobile-menu" class="mobile-menu hidden">
+            <div class="mobile-menu-header">
+                <h2>MyApp Menu</h2>
+                <!-- Updated close button -->
+                <button class="close-menu-btn" onclick="toggleMobileMenu()">
+                    <i class="fas fa-times"></i>  <!-- Close icon -->
+                </button>
+            </div>
+
+            {% if user.is_authenticated %}
+                <span class="mobile-welcome-message">Welcome, {{ user.username }}!</span>
+                <a href="{% url 'logout_page' %}" class="mobile-sign-in-btn">Logout</a>
+            {% else %}
+                <a href="{% url 'login_page' %}" class="mobile-sign-in-btn">Sign In</a>
+                <a href="{% url 'signup_page' %}" class="mobile-try-out-btn">Try Out X ↗</a>
+            {% endif %}
+
+            <a href="{% url 'dashboard' %}" class="nav-link">Home</a>
+            {# Uncomment mobile links as needed #}
+            {# <a href="{% url 'about' %}" class="mobile-nav-link">About</a> #}
+            {# <a href="{% url 'pricing' %}" class="mobile-nav-link">Pricing</a> #}
+
+            <div class="mobile-resources">
+                <button onclick="toggleDropdown()">Resources 
+                    <i class="fas fa-chevron-down"></i> <!-- Dropdown icon -->
+                </button>
+                <div id="dropdown" class="hidden">
+                    {# Uncomment these as needed #}
+                    {# <a href="{% url 'about' %}" class="mobile-dropdown-link">About Us</a> #}
+                    {# <a href="{% url 'faq' %}" class="mobile-dropdown-link">FAQ</a> #}
+                    {# <a href="{% url 'blog' %}" class="mobile-dropdown-link">Blog</a> #}
+                    {# <a href="{% url 'changelog' %}" class="mobile-dropdown-link">Changelog</a> #}
+                </div>
+            </div>
+            <button class="dark-mode-btn"><i class="fas fa-moon"></i> Dark Mode</button>
+        </div>
+
+    </header>
+</body>
+</html>
