@@ -1,9 +1,4 @@
-apiVersion: core.choreo.dev/v1beta1
-kind: ComponentConfig
-spec:
-  inbound:
-    - name: PuzzleRoom Service
-      port: 8000
-      type: REST
-      networkVisibility: Public
-      context: /
+name: puzzleRoom
+type: webapp
+source:
+  location: .
