@@ -7,4 +7,5 @@ spec:
       type: REST
       networkVisibility: Public
       context: /
-  outbound: []
+  outbound:
+    serviceReferences: []
