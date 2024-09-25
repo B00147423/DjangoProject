@@ -1,0 +1,4 @@
+name: puzzleRoom
+type: webapp
+source:
+  location: ./PuzzleRoom
