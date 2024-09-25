@@ -1,0 +1,4 @@
+name: puzzle-room
+type: webapp
+source:
+  location: .
