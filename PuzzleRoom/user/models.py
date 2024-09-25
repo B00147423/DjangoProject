@@ -1,7 +1,8 @@
+#C:\Users\beka\OneDrive\Desktop\Year4DjangoMajor-Project\DjangoProject\PuzzleRoom\user\models.py
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
 from django.db import models
 from django.utils import timezone
-
+from rooms.models import PuzzleRoom  # Import the PuzzleRoom model
 
 class UserManager(BaseUserManager):
     def create_user(self, email, username, password=None, **extra_fields):
@@ -33,7 +34,8 @@ class User(AbstractBaseUser, PermissionsMixin):
     last_name = models.CharField(max_length=30)
     password = models.CharField(max_length=128)
     join_date = models.DateTimeField(default=timezone.now)
-
+    puzzle_room = models.ForeignKey(PuzzleRoom, on_delete=models.SET_NULL, null=True, blank=True)  # User can only be in one room at a time
+    
     # These fields are required for authentication and admin interface compatibility
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)

@@ -28,6 +28,7 @@
                 {# <a href="{% url 'about' %}" class="nav-link">About</a> #}
                 {# <a href="{% url 'pricing' %}" class="nav-link">Pricing</a> #}
                 {# <a href="{% url 'contact' %}" class="nav-link">Contact</a> #}
+            
             </div>
 
             <!-- Desktop Sign In and Try Out buttons -->
@@ -36,6 +37,10 @@
                     <span>Welcome, {{ user.username }}!</span>
                     <a href="{% url 'logout_page' %}">
                         <button class="sign-in-btn">Logout</button>
+                    </a>
+                    <!-- Add the Create Room button -->
+                    <a href="{% url 'create_room' %}">
+                        <button class="create-room-btn">Create Room</button>
                     </a>
                 {% else %}
                     <a href="{% url 'login_page' %}">

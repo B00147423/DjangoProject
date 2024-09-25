@@ -1,0 +1,25 @@
+.puzzle-piece {
+    width: 100px;
+    height: 100px;
+    border: 1px solid #ccc;
+    display: inline-block;
+    margin: 5px;
+    cursor: move;
+}
+#content {
+    padding-top: 80px; /* Adjust according to navbar height */
+}
+
+.drop-area {
+    border: 2px dashed #ccc;
+    position: relative;
+    display: grid;
+    gap: 2px;
+}
+
+.grid-cell {
+    width: 100px;
+    height: 100px;
+    border: 1px dashed #ccc;
+    position: relative;
+}

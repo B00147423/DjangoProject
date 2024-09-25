@@ -1,0 +1,26 @@
+<!-- rooms/templates/rooms/room_detail.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ room.name }} (Room ID: {{ room.room_id }})</title>
+    <meta name="csrf-token" content="{{ csrf_token }}">
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'user/css/room_detail.css' %}">
+</head>
+<body>
+    <h1>Welcome to {{ room.name }} (Room ID: {{ room.room_id }})</h1>
+    <p>Puzzle: {{ room.puzzle.title }}</p>
+    <p>Created At: {{ room.created_at }}</p>
+
+    <!-- Drop area for dragging and dropping puzzle pieces -->
+    <div class="drop-area" id="dropArea" data-cols="{{ room.puzzle.cols }}" data-rows="{{ room.puzzle.rows }}">
+        {% for piece_path in room.state.pieces %}
+            <img src="{{ piece_path }}" class="puzzle-piece" id="piece-{{ forloop.counter }}" draggable="true" data-piece-index="{{ forloop.counter0 }}">
+        {% endfor %}
+    </div>
+
+    <script src="{% static 'user/js/room_detail.js' %}"></script>
+</body>
+</html>
