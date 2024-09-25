@@ -7,13 +7,4 @@ spec:
       type: REST
       networkVisibility: Public
       context: /
-      # Optional: If you have an OpenAPI specification, specify the schema file path
-      # schemaFilePath: openapi.yaml
-  outbound:
-    # Define outbound connections if your app connects to other services
-    # Example:
-    # - name: ExternalServiceConnection
-    #   connectionConfig: <connection-id>
-    #   env:
-    #     - from: ExternalServiceURL
-    #       to: EXTERNAL_SERVICE_URL
+  outbound: []
