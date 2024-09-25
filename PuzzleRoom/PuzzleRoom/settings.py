@@ -84,6 +84,27 @@ DATABASES = {
     }
 }
 
+#DATABASES = {
+ #   'default': {
+  #      'ENGINE': 'postgresql://postgres.pqxcaxmnuisojsxinayh:[YOUR-PASSWORD]@aws-0-eu-west-1.pooler.supabase.com:6543/postgres',
+   #     'NAME': 'PuzzleRoom',
+    #    'USER': 'postgres',
+     #   'PASSWORD': 'pass',
+      #  'HOST': '127.0.0.1',
+       # 'PORT': '5432',
+    #}
+#}
+
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'postgres',  # The name of the database
+        'USER': 'postgres.pqxcaxmnuisojsxinayh',  # The username for the database
+        'PASSWORD': 'PlsStopThis45@?',  # The password for the database
+        'HOST': 'aws-0-eu-west-1.pooler.supabase.com',  # The database host
+        'PORT': '6543',  # The port for the database connection
+    }
+}
 
 
 # Password validation
