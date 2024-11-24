@@ -1,14 +1,23 @@
-# C:\Users\beka\OneDrive\Desktop\MajorProjectY4\backend\api\user\urls.py
 from django.urls import path
-from .login import  get_user_info
-from .views import login_page, signup_page, logout_page, dashboard_page
+from .views import (
+    auth_page, logout_page, dashboard_page, pending_verification, resend_verification_email,
+    settings_page, change_username, change_email, change_password, verify_email, 
+    pending_verification_status, send_verification_email, test_send_email, verified_account
+)
 
 urlpatterns = [
     path('dashboard/', dashboard_page, name='dashboard'),
-    # Rendering signup and login template pages
-    path('signup-page/', signup_page, name='signup_page'),
-    path('signin-page/', login_page, name='login_page'),
+    path('auth/', auth_page, name='auth_page'),
     path('logout/', logout_page, name='logout_page'),
-    # User information view
-    path('user-info/', get_user_info, name='user-info'),
+    path('settings/', settings_page, name='settings'),
+    path('settings/change_username/', change_username, name='change_username'),
+    path('settings/change_email/', change_email, name='change_email'),
+    path('settings/change_password/', change_password, name='change_password'),
+    path('verify/<uidb64>/<token>/', verify_email, name='verify_email'),
+    path('test-email/', test_send_email, name='test_send_email'),
+    path('pending-verification/', pending_verification, name='pending_verification'),
+    path('pending-verification-status/', pending_verification_status, name='pending_verification_status'),
+    path('resend-verification-email/', resend_verification_email, name='resend_verification_email'),
+    path('send_verification_email/', send_verification_email, name='send_verification_email'),
+    path('verified/', verified_account, name='verified_account'),
 ]

@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Waiting Room - {{ room.name }}</title>
+</head>
+<body>
+    <h1>Waiting for another player to join the room "{{ room.name }}"...</h1>
+
+    <p>Game Mode: {{ room.mode }}</p>
+    
+    {% if room.mode == 'versus' %}
+        <p>This is a 1v1 game. Invite your opponent using the link below:</p>
+    {% else %}
+        <p>This is a collaborative game. Invite a friend to join and work together!</p>
+    {% endif %}
+    
+    <p>Share this invite link:</p>
+    <a href="{{ invite_link }}">{{ invite_link }}</a>
+
+    {% if room.player2 is None and request.user != room.player1 %}
+        <form method="post">
+            {% csrf_token %}
+            <button type="submit">Join as Player 2</button>
+        </form>
+    {% endif %}
+
+    <!-- Poll for Player 2 status -->
+    <script>
+        const roomMode = "{{ room.mode }}"; // This should be either "versus" or "collaborative"
+        const versusRoomUrl = "{% url 'jigsaw_puzzle_room' room.id %}";
+        const collaborativeRoomUrl = "{% url 'collaborative_room' room.id %}";
+    
+        function checkPlayer2Status() {
+            fetch("{% url 'check_player2_status' room.id %}")
+                .then(response => response.json())
+                .then(data => {
+                    if (data.player2_joined) {
+                        // Choose the URL based on room mode
+                        let redirectUrl;
+                        
+                        // Check if roomMode is "collaborative" or "versus"
+                        if (roomMode === "collaborative") {
+                            redirectUrl = collaborativeRoomUrl;
+                        } else if (roomMode === "versus") {
+                            redirectUrl = versusRoomUrl;
+                        } else {
+                            console.error("Error: roomMode is not set correctly:", roomMode);
+                        }
+    
+                        // If redirectUrl is defined, navigate to it
+                        if (redirectUrl) {
+                            console.log("Redirecting to:", redirectUrl);
+                            window.location.href = redirectUrl;
+                        } else {
+                            console.error("Error: Redirect URL is undefined.");
+                        }
+                    } else {
+                        setTimeout(checkPlayer2Status, 2000);
+                    }
+                });
+        }
+    
+        checkPlayer2Status();
+    </script>
+</body>
+</html>

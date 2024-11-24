@@ -1,0 +1,195 @@
+{% load static %}
+{% load socialaccount %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Settings</title>
+    <link rel="stylesheet" href="{% static 'user/css/settings.css' %}">
+    <style>
+        /* Basic Styling */
+        .container {
+            padding: 20px;
+        }
+
+        .settings-link {
+            display: block;
+            margin: 10px 0;
+            color: #3498db;
+            text-decoration: none;
+            font-size: 1.2rem;
+        }
+
+        .settings-link:hover {
+            color: #2980b9;
+        }
+
+        .form-container {
+            display: none; /* Hide all forms initially */
+            margin-top: 20px;
+        }
+
+        .active {
+            display: block; /* Only display the active form */
+        }
+
+        .settings-options {
+            margin-bottom: 30px;
+        }
+
+        .form-container h2 {
+            margin-bottom: 20px;
+        }
+
+        .form-container form {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-container button {
+            background-color: #3498db;
+            color: white;
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        .form-container button:hover {
+            background-color: #2980b9;
+        }
+
+        /* Error Message Styling */
+        .alert {
+            color: red;
+            background-color: #f8d7da;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+        }
+
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>User Settings</h2>
+
+        <!-- Links for changing settings -->
+        <div class="settings-options" id="settings-options">
+            <div class="setting-item">
+                <h3>Profile Settings</h3>
+                <a href="#" id="change-username" class="settings-link">Change Username</a>
+                <a href="#" id="change-email" class="settings-link">Change Email</a>
+                <a href="#" id="change-password" class="settings-link">Change Password</a>
+            </div>
+        </div>
+
+        <!-- Change Username Form -->
+        <div id="username-form" class="form-container">
+            <h2>Change Username</h2>
+            <form method="post">
+                {% csrf_token %}
+                {{ change_username_form.as_p }}
+                <button type="submit">Update Username</button>
+            </form>
+            <a href="#" class="settings-link" id="back-to-settings-username">Back to Settings</a>
+        </div>
+
+        <!-- Change Email Form -->
+        <div id="email-form" class="form-container">
+            <h2>Change Email</h2>
+            <!-- Display form errors if any -->
+            {% if change_email_form.errors %}
+                <div class="alert">
+                    <ul>
+                        {% for field in change_email_form %}
+                            {% for error in field.errors %}
+                                <li>{{ error }}</li>
+                            {% endfor %}
+                        {% endfor %}
+                    </ul>
+                </div>
+            {% endif %}
+            <form method="post">
+                {% csrf_token %}
+                {{ change_email_form.as_p }}
+                <button type="submit">Update Email</button>
+            </form>
+            <a href="#" class="settings-link" id="back-to-settings-email">Back to Settings</a>
+        </div>
+
+        <!-- Change Password Form -->
+        <div id="password-form" class="form-container">
+            <h2>Change Password</h2>
+            <form method="post">
+                {% csrf_token %}
+                {{ change_password_form.as_p }}
+                <button type="submit">Change Password</button>
+            </form>
+            <a href="#" class="settings-link" id="back-to-settings-password">Back to Settings</a>
+        </div>
+    </div>
+
+    <script>
+        // Show the appropriate form based on the link clicked
+        document.getElementById('change-username').addEventListener('click', function(e) {
+            e.preventDefault();
+            toggleForm('username-form');
+        });
+
+        document.getElementById('change-email').addEventListener('click', function(e) {
+            e.preventDefault();
+            toggleForm('email-form');
+        });
+
+        document.getElementById('change-password').addEventListener('click', function(e) {
+            e.preventDefault();
+            toggleForm('password-form');
+        });
+
+        // Toggle function to show and hide forms
+        function toggleForm(formId) {
+            // Hide all forms
+            document.querySelectorAll('.form-container').forEach(function(form) {
+                form.style.display = 'none';  // Hide the form
+            });
+
+            // Hide settings options (links)
+            document.getElementById('settings-options').style.display = 'none';
+
+            // Show the selected form
+            document.getElementById(formId).style.display = 'block';  // Show the selected form
+        }
+
+        // Back to settings links to show the original options
+        document.getElementById('back-to-settings-username').addEventListener('click', function(e) {
+            e.preventDefault();
+            backToSettings();
+        });
+
+        document.getElementById('back-to-settings-email').addEventListener('click', function(e) {
+            e.preventDefault();
+            backToSettings();
+        });
+
+        document.getElementById('back-to-settings-password').addEventListener('click', function(e) {
+            e.preventDefault();
+            backToSettings();
+        });
+
+        // Function to go back to the settings options (links)
+        function backToSettings() {
+            // Show settings options (links)
+            document.getElementById('settings-options').style.display = 'block';
+
+            // Hide all forms
+            document.querySelectorAll('.form-container').forEach(function(form) {
+                form.style.display = 'none';
+            });
+        }
+    </script>
+</body>
+</html>

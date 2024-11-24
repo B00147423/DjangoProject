@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Create Puzzle Room</title>
+</head>
+<body>
+    <h1>Create a New Puzzle Room</h1>
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        
+        <!-- Room name -->
+        <label for="id_name">Room Name:</label>
+        <input type="text" name="name" id="id_name" required><br>
+
+        <!-- Puzzle image -->
+        <label for="id_puzzle_image">Puzzle Image:</label>
+        <input type="file" name="puzzle_image" id="id_puzzle_image" required><br>
+
+        <!-- Difficulty selection -->
+        <label for="id_difficulty">Difficulty:</label>
+        <select name="difficulty" id="id_difficulty" required>
+            <option value="easy">Easy</option>
+            <option value="medium">Medium</option>
+            <option value="hard">Hard</option>
+        </select><br>
+
+        <!-- Mode selection -->
+        <label for="id_mode">Mode:</label>
+        <select name="mode" id="id_mode" required>
+            <option value="versus">Versus (1v1)</option>
+            <option value="collaborative">Collaborative</option>
+        </select><br>
+
+        <button type="submit">Create Room</button>
+    </form>
+</body>
+
+<script>
+    const piecesData = JSON.parse("{{ pieces_data|escapejs }}");
+    const playerRole = "{{ player_role }}";
+    const roomId = "{{ room.id }}";
+    const socket = new WebSocket(`ws://${window.location.host}/ws/puzzle/${roomId}/`);
+
+    // Variables to keep track of dragging state
+    let draggedPiece = null;
+    let offsetX = 0;
+    let offsetY = 0;
+
+    // Render puzzle pieces on the board
+    function renderPuzzlePieces() {
+        const container = document.getElementById("puzzle-container");
+        piecesData.forEach(piece => {
+            const pieceElement = document.createElement("div");
+            pieceElement.classList.add("piece");
+            pieceElement.style.backgroundImage = `url(${piece.image_url})`;
+            pieceElement.style.left = piece.x + "px";
+            pieceElement.style.top = piece.y + "px";
+            pieceElement.dataset.pieceId = piece.id;
+
+            // Add event listeners for drag-and-drop
+            pieceElement.addEventListener("mousedown", onMouseDown);
+
+            container.appendChild(pieceElement);
+        });
+    }
+
+    function onMouseDown(e) {
+        const pieceId = e.target.dataset.pieceId;
+        socket.send(JSON.stringify({
+            type: 'lock_piece',
+            piece_id: pieceId,
+            player_role: playerRole,
+        }));
+
+        // Proceed with dragging only if the piece is not locked by another player
+        draggedPiece = e.target;
+        offsetX = e.clientX - draggedPiece.offsetLeft;
+        offsetY = e.clientY - draggedPiece.offsetTop;
+
+        document.addEventListener("mousemove", onMouseMove);
+        document.addEventListener("mouseup", onMouseUp);
+    }
+
+    function onMouseMove(e) {
+        if (!draggedPiece) return;
+
+        // Calculate new position
+        const newX = e.clientX - offsetX;
+        const newY = e.clientY - offsetY;
+
+        // Update piece position
+        draggedPiece.style.left = `${newX}px`;
+        draggedPiece.style.top = `${newY}px`;
+    }
+
+    function onMouseUp(e) {
+        const container = document.getElementById("puzzle-container");
+        const gridSize = container.offsetWidth / gridSize; // Adjust dynamically
+
+        const snappedX = Math.round(draggedPiece.offsetLeft / gridSize) * gridSize;
+        const snappedY = Math.round(draggedPiece.offsetTop / gridSize) * gridSize;
+
+        draggedPiece.style.left = `${snappedX}px`;
+        draggedPiece.style.top = `${snappedY}px`;
+
+        socket.send(JSON.stringify({
+            type: 'piece_move',
+            piece_id: draggedPiece.dataset.pieceId,
+            new_x: snappedX,
+            new_y: snappedY,
+        }));
+
+        draggedPiece = null;
+        document.removeEventListener("mousemove", onMouseMove);
+        document.removeEventListener("mouseup", onMouseUp);
+    }
+    // WebSocket message handling
+    socket.onmessage = function(event) {
+        const data = JSON.parse(event.data);
+        if (data.type === 'piece_move') {
+            const pieceElement = document.querySelector(`[data-piece-id="${data.piece_id}"]`);
+            if (pieceElement) {
+                pieceElement.style.left = `${data.new_x}px`;
+                pieceElement.style.top = `${data.new_y}px`;
+            }
+        }
+    };
+
+    renderPuzzlePieces();
+</script>
+
+</html>

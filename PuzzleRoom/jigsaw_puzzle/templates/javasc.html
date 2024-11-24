@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ player1 }} VS {{ player2 }} Puzzle</title>
+    <script src="https://unpkg.com/konva@8.4.2/konva.min.js"></script>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            font-family: Arial, sans-serif;
+            overflow: hidden;
+        }
+        #container {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+        #header {
+            text-align: center;
+            padding: 10px;
+            background-color: #f0f0f0;
+            font-size: 1.5rem;
+        }
+        #game-area {
+            display: flex;
+            flex: 1;
+            flex-direction: row;
+            overflow: hidden;
+        }
+        #player1-container, #player2-container {
+            width: 50%;
+            padding: 10px;
+            position: relative;
+            box-sizing: border-box;
+        }
+        #player1-container {
+            border-right: 2px solid black;
+        }
+        .grid-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 70%;
+            border: 1px solid #ccc;
+            background-color: #fff;
+        }
+        .pieces-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            justify-content: center;
+            background-color: #e0e0e0;
+            padding: 10px;
+            height: 30%;
+            overflow-y: auto;
+        }
+        .piece {
+            width: 50px;
+            height: 50px;
+            background-color: #d3d3d3;
+            border: 1px solid #ccc;
+            cursor: pointer;
+            background-size: cover;
+        }
+        .piece.disabled {
+            opacity: 0.5;
+            pointer-events: none;
+        }
+        .piece.selected {
+            border: 2px solid green;
+        }
+        .blurred {
+            filter: blur(5px);
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body>
+    <div id="container">
+        <div id="header">
+            <h1>{{ player1 }} VS {{ player2 }} Puzzle</h1>
+            <div id="timer">Time: 00:00</div>
+        </div>
+        <div id="game-area">
+            <div id="player1-container">
+                <div class="grid-container" id="player1-grid-container">
+                    <div id="player1-grid"></div>
+                </div>
+                <div class="pieces-container" id="player1-pieces"></div>
+            </div>
+            <div id="player2-container">
+                <div class="grid-container" id="player2-grid-container">
+                    <div id="player2-grid"></div>
+                </div>
+                <div class="pieces-container" id="player2-pieces"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const csrfToken = '{{ csrf_token }}';
+        const difficulty = '{{ room.difficulty }}';
+        const playerRole = '{{ player_role }}';
+        const roomName = "{{ room.id }}";
+        const player1Name = "{{ player1 }}";
+        const player2Name = "{{ player2 }}";
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const player1Grid = document.getElementById('player1-grid-container');
+            const player2Grid = document.getElementById('player2-grid-container');
+
+            // Apply blur effect conditionally
+            if (playerRole === 'player1') {
+                player2Grid.classList.add('blurred');
+            } else if (playerRole === 'player2') {
+                player1Grid.classList.add('blurred');
+            }
+        });
+
+        let gridRows, gridCols;
+        const baseGridSize = 100;
+        let selectedPiece = null;
+        const placedPieces = {};
+        let startTime;
+        let timerInterval;
+
+        if (difficulty === 'easy') {
+            gridRows = gridCols = 4;
+        } else if (difficulty === 'medium') {
+            gridRows = gridCols = 6;
+        } else if (difficulty === 'hard') {
+            gridRows = gridCols = 8;
+        }
+
+        const player1Stage = new Konva.Stage({
+            container: 'player1-grid',
+            width: baseGridSize * gridCols,
+            height: baseGridSize * gridRows,
+        });
+        const player1Layer = new Konva.Layer();
+        player1Stage.add(player1Layer);
+
+        const player2Stage = new Konva.Stage({
+            container: 'player2-grid',
+            width: baseGridSize * gridCols,
+            height: baseGridSize * gridRows,
+        });
+        const player2Layer = new Konva.Layer();
+        player2Stage.add(player2Layer);
+
+        const socket = new WebSocket(`ws://${window.location.host}/ws/puzzle/${roomName}/`);
+
+        function startTimer() {
+            startTime = Date.now();
+            timerInterval = setInterval(updateTimer, 1000);
+        }
+
+        function updateTimer() {
+            const elapsedTime = Math.floor((Date.now() - startTime) / 1000);
+            const minutes = Math.floor(elapsedTime / 60);
+            const seconds = elapsedTime % 60;
+            document.getElementById('timer').textContent = `Time: ${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        }
+
+        function loadPuzzlePieces(piecesContainerId, piecesData) {
+            const piecesContainer = document.getElementById(piecesContainerId);
+
+            piecesData.forEach(piece => {
+                const pieceElement = document.createElement('div');
+                pieceElement.classList.add('piece');
+                pieceElement.style.backgroundImage = `url('${piece.image_url}')`;
+                pieceElement.dataset.pieceId = piece.id;
+
+                if (
+                    (playerRole === 'player1' && piecesContainerId === 'player1-pieces') ||
+                    (playerRole === 'player2' && piecesContainerId === 'player2-pieces')
+                ) {
+                    pieceElement.addEventListener('click', () => {
+                        if (selectedPiece) selectedPiece.classList.remove('selected');
+                        selectedPiece = pieceElement;
+                        pieceElement.classList.add('selected');
+                    });
+                }
+
+                piecesContainer.appendChild(pieceElement);
+            });
+        }
+
+        function createGrid(stage, layer, player) {
+            const isPlayerGrid = (player === 'player1' && playerRole === 'player1') ||
+                     (player === 'player2' && playerRole === 'player2');
+
+            function placePiece(square) {
+                if (selectedPiece) {
+                    const pieceId = selectedPiece.dataset.pieceId;
+                    const newX = square.x();
+                    const newY = square.y();
+                    const backgroundImage = selectedPiece.style.backgroundImage.slice(5, -2);
+                    
+                    savePuzzleState(pieceId, newX, newY);
+                    addPieceToLayer(layer, selectedPiece, newX, newY, pieceId);
+
+                    selectedPiece.classList.remove('selected');
+                    selectedPiece = null;
+
+                    sendMove(pieceId, newX, newY, backgroundImage);
+                    checkPuzzleCompletion();
+                }
+            }
+
+            function addPieceToLayer(layer, selectedPiece, x, y, pieceId) {
+                let existingPiece = layer.findOne(`#${pieceId}`);
+                if (existingPiece) {
+                    existingPiece.destroy();
+                }
+
+                const imageNode = new Konva.Image({
+                    x: x,
+                    y: y,
+                    width: baseGridSize,
+                    height: baseGridSize,
+                    image: new Image(),
+                    id: pieceId,
+                    draggable: true,
+                });
+                imageNode.image().src = selectedPiece.style.backgroundImage.slice(5, -2);
+                imageNode.image().onload = () => {
+                    layer.add(imageNode);
+                    layer.draw();
+                };
+
+                imageNode.on('dragend', (e) => {
+                    const newPos = stage.getPointerPosition();
+                    const x = Math.round(newPos.x / baseGridSize) * baseGridSize;
+                    const y = Math.round(newPos.y / baseGridSize) * baseGridSize;
+                    imageNode.position({x: x, y: y});
+                    layer.draw();
+                    savePuzzleState(pieceId, x, y);
+                    sendMove(pieceId, x, y, imageNode.image().src);
+                    checkPuzzleCompletion();
+                });
+            }
+
+            function setupGrid() {
+                layer.destroyChildren();
+
+                const currentGridSize = stage.width() / gridCols;
+
+                for (let i = 0; i < gridCols; i++) {
+                    for (let j = 0; j < gridRows; j++) {
+                        const square = new Konva.Rect({
+                            x: i * currentGridSize,
+                            y: j * currentGridSize,
+                            width: currentGridSize,
+                            height: currentGridSize,
+                            stroke: 'gray',
+                            strokeWidth: 1,
+                        });
+
+                        if (isPlayerGrid) {
+                            square.on('click', () => {
+                                placePiece(square);
+                            });
+                        }
+
+                        layer.add(square);
+                    }
+                }
+                layer.draw();
+            }
+
+            setupGrid();
+
+            window.addEventListener('resize', () => {
+                const containerWidth = document.getElementById(player === 'player1' ? 'player1-grid' : 'player2-grid').offsetWidth;
+                const containerHeight = document.getElementById(player === 'player1' ? 'player1-grid' : 'player2-grid').offsetHeight;
+                const newSize = Math.min(containerWidth, containerHeight);
+                stage.width(newSize);
+                stage.height(newSize);
+                setupGrid();
+                layer.draw();
+            });
+        }
+
+        function sendMove(pieceId, newX, newY, imageUrl) {
+            socket.send(JSON.stringify({
+                'type': 'piece_move',
+                'piece_id': pieceId,
+                'new_x': newX,
+                'new_y': newY,
+                'player_role': playerRole,
+                'image_url': imageUrl
+            }));
+        }
+
+        function updatePieceOnGrid(layer, pieceId, x, y, imageUrl) {
+            let piece = layer.findOne(`#${pieceId}`);
+            
+            if (!piece) {
+                piece = new Konva.Image({
+                    x: x,
+                    y: y,
+                    width: baseGridSize,
+                    height: baseGridSize,
+                    image: new Image(),
+                    id: pieceId,
+                    draggable: true,
+                });
+                piece.image().src = imageUrl;
+                piece.image().onload = () => {
+                    layer.add(piece);
+                    layer.draw();
+                };
+
+                piece.on('dragend', (e) => {
+                    const newPos = layer.getStage().getPointerPosition();
+                    const newX = Math.round(newPos.x / baseGridSize) * baseGridSize;
+                    const newY = Math.round(newPos.y / baseGridSize) * baseGridSize;
+                    piece.position({x: newX, y: newY});
+                    layer.draw();
+                    savePuzzleState(pieceId, newX, newY);
+                    sendMove(pieceId, newX, newY, piece.image().src);
+                    checkPuzzleCompletion();
+                });
+            } else {
+                piece.position({x: x, y: y});
+                layer.draw();
+            }
+        }
+
+        function savePuzzleState(pieceId, newX, newY) {
+            fetch(`/jigsaw/save_puzzle_state/${roomName}/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrfToken,
+                },
+                body: JSON.stringify({
+                    pieceId: pieceId,
+                    x: newX,
+                    y: newY
+                })
+            });
+        }
+
+        function checkPuzzleCompletion() {
+            const playerLayer = playerRole === 'player1' ? player1Layer : player2Layer;
+            const pieces = playerLayer.find('Image');
+            
+            if (pieces.length === gridRows * gridCols) {
+                let completed = true;
+                for (let i = 0; i < pieces.length; i++) {
+                    const piece = pieces[i];
+                    const correctX = (i % gridCols) * baseGridSize;
+                    const correctY = Math.floor(i / gridCols) * baseGridSize;
+                    if (piece.x() !== correctX || piece.y() !== correctY) {
+                        completed = false;
+                        break;
+                    }
+                }
+                if (completed) {
+                    clearInterval(timerInterval);
+                    alert(`Congratulations! You completed the puzzle in ${document.getElementById('timer').textContent.slice(6)}`);
+                    socket.send(JSON.stringify({
+                        'type': 'puzzle_completed',
+                        'player_role': playerRole,
+                        'time': document.getElementById('timer').textContent.slice(6)
+                    }));
+                }
+            }
+        }
+
+        createGrid(player1Stage, player1Layer, 'player1');
+        createGrid(player2Stage, player2Layer, 'player2');
+
+        socket.onmessage = function(event) {
+            const data = JSON.parse(event.data);
+
+            if (data.type === 'initial_pieces') {
+                data.pieces.forEach(piece => {
+                    updatePieceOnGrid(player1Layer, piece.id, piece.x, piece.y, piece.image_url);
+                    updatePieceOnGrid(player2Layer, piece.id, piece.x, piece.y, piece.image_url);
+                });
+                startTimer();
+            } 
+            else if (data.type === 'piece_move') {
+                const pieceId = data.piece_id;
+                const newX = data.new_x;
+                const newY = data.new_y;
+                const movingPlayerRole = data.player_role;
+                const imageUrl = data.image_url;
+
+                const targetLayer = movingPlayerRole === 'player1' ? player1Layer : player2Layer;
+                updatePieceOnGrid(targetLayer, pieceId, newX, newY, imageUrl);
+            }
+            else if (data.type === 'puzzle_completed') {
+                if (data.player_role !== playerRole) {
+                    clearInterval(timerInterval);
+                    alert(`Your opponent completed the puzzle in ${data.time}. Better luck next time!`);
+                }
+            }
+        };
+
+        // Load initial pieces
+        const piecesData = JSON.parse('{{ pieces_data|escapejs }}');
+        loadPuzzlePieces('player1-pieces', piecesData);
+        loadPuzzlePieces('player2-pieces', piecesData);
+        piecesData.forEach(piece => {
+            if (piece.x >= 0 && piece.y >= 0) {
+                updatePieceOnGrid(player1Layer, piece.id, piece.x, piece.y, piece.image_url);
+                updatePieceOnGrid(player2Layer, piece.id, piece.x, piece.y, piece.image_url);
+            }
+        });
+    </script>
+</body>
+</html>

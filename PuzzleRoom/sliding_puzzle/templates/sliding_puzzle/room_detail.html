@@ -1,0 +1,79 @@
+<!--C:\Users\beka\OneDrive\Desktop\Year4DjangoMajor-Project\DjangoProject\PuzzleRoom\sliding_puzzle\templates\sliding_puzzle\room_detail.html-->
+<!-- C:\Users\beka\OneDrive\Desktop\Year4DjangoMajor-Project\DjangoProject\PuzzleRoom\sliding_puzzle\templates\sliding_puzzle\room_detail.html -->
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ room.name }} (Room ID: {{ room.room_id }})</title>
+    <meta name="csrf-token" content="{{ csrf_token }}">
+    <style>
+        #puzzle-container {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 5px;
+            width: 320px;  /* Set according to your image size */
+            height: 320px; /* Adjust to match image proportions */
+        }
+
+        .tile {
+            width: 75px; /* Adjust based on the image size */
+            height: 75px;
+            background-size: 100% 100%; /* Scale the image to fit the tile */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0; /* Remove any text content */
+        }
+
+        .empty {
+            background-color: white;
+        }
+    </style>
+</head>
+<body>
+    <h1>{{ room.name }} (Room ID: {{ room.room_id }})</h1>
+    <div id="participants">
+        <h3>Participants in this room:</h3>
+        <ul>
+            <li>{{ room.player1.username }}</li>
+            {% if room.player2 %}
+            <li>{{ room.player2.username }}</li>
+            {% else %}
+            <li>Waiting for Player 2...</li>
+            {% endif %}
+        </ul>
+    </div>
+
+    <!-- Puzzle grid -->
+    <div id="puzzle-container"></div>
+
+    <!-- Button to generate invite link -->
+    <button id="generateInviteBtn">Generate Invite Link</button>
+    <p id="inviteLink"></p>
+
+    <!-- Pass room_id and puzzle_state to JavaScript -->
+    <script>
+        const roomId = "{{ room.room_id }}";
+        const mediaUrl = "{{ MEDIA_URL }}";
+        const savedPuzzleState = JSON.parse('{{ puzzle_state|escapejs }}') || [...Array(15).keys(), 'empty'];
+    </script>
+
+    <!-- Script for generating invite link -->
+    <script>
+        document.getElementById('generateInviteBtn').addEventListener('click', function() {
+            fetch(`/rooms/generate-invite-link/${roomId}/`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    document.getElementById('inviteLink').innerText = `Invite Link: ${data.invite_link}`;
+                }
+            });
+        });
+    </script>
+
+    <!-- Load the sliding puzzle script -->
+    <script src="{% static 'user/js/sliding_puzzle.js' %}"></script>
+</body>
+</html>

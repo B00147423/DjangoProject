@@ -1,18 +1,69 @@
-{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Dashboard PuzzleRoom{% endblock %}</title>
- 
+    <title>IoT Puzzle Room Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
-<body>
-    {% include 'navbar/header.html' %}
-    <main>{% block content %}{% endblock %}
-<p>Hello thsi ids Dashboard</p>
+<body class="bg-gray-100 min-h-screen">
+    {% include 'navbar/navbar.html' %}
 
+    <main class="container mx-auto mt-12 p-6 max-w-5xl"> <!-- Increased margin for more space -->
+        <h1 class="text-4xl font-extrabold mb-10 text-center text-blue-600">Welcome to Puzzle Room</h1> <!-- Enhanced text size and color -->
+
+        <!-- Main Action Buttons -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <!-- Puzzle Creation Cards -->
+            <div class="bg-white border border-gray-200 rounded-lg shadow-lg p-8 transform hover:scale-105 transition duration-300">
+                <i class="fas fa-puzzle-piece text-blue-600 text-6xl mb-4"></i>
+                <h2 class="text-2xl font-semibold mb-2">Create Puzzle</h2>
+                <a href="{% url 'create_jigsaw_room' %}" class="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-4 rounded-full transition duration-300">
+                    Create Jigsaw Room
+                </a>
+            </div>
+
+            <div class="bg-white border border-gray-200 rounded-lg shadow-lg p-8 transform hover:scale-105 transition duration-300">
+                <i class="fas fa-puzzle-piece text-blue-600 text-6xl mb-4"></i>
+                <h2 class="text-2xl font-semibold mb-2">Create Puzzle</h2>
+                <a href="{% url 'create_room' %}" class="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-4 rounded-full transition duration-300">
+                    Create sliding Puzzle Room
+                </a>
+            </div>
+
+            <!-- Join Room Button -->
+            <div class="bg-white border border-gray-200 rounded-lg shadow-lg p-8 transform hover:scale-105 transition duration-300">
+                <i class="fas fa-users text-blue-600 text-6xl mb-4"></i>
+                <h2 class="text-2xl font-semibold mb-2">Join Room</h2>
+                <a href="#" class="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-4 rounded-full transition duration-300">
+                    Join Existing Room
+                </a>
+            </div>
+        </div>
+
+        <!-- Recent Activity Section -->
+        <div class="mt-12">
+            <div class="bg-white border border-gray-200 rounded-lg shadow-lg p-8">
+                <h2 class="text-2xl font-semibold mb-6">Recent Activity</h2>
+                <ul class="space-y-4">
+                    {% for activity in recent_activities %}
+                    <li class="flex items-center space-x-3">
+                        <i class="fas fa-clock text-gray-400"></i>
+                        <span class="text-gray-700">{{ activity.description }} - {{ activity.timestamp }}</span>
+                    </li>
+                    {% empty %}
+                    <li class="text-gray-500">No recent activities.</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
     </main>
-    
+
+    <footer class="bg-white mt-12 py-6">
+        <div class="container mx-auto text-center text-gray-600">
+            <p>&copy; 2024 IoT Puzzle Room. All rights reserved.</p>
+        </div>
+    </footer>
 </body>
 </html>

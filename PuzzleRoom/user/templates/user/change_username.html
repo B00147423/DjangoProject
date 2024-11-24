@@ -1,0 +1,15 @@
+<!-- templates/user/change_username.html -->
+<h2>Change Username</h2>
+{% if messages %}
+    {% for message in messages %}
+        <div class="alert {% if message.tags %}alert-{{ message.tags }}{% endif %}">
+            {{ message }}
+        </div>
+    {% endfor %}
+{% endif %}
+<form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">Update Username</button>
+</form>
+<a href="{% url 'settings' %}">Back to Settings</a>

@@ -1,0 +1,38 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="{% static 'user/css/auth.css' %}">
+    <title>Sign in with Google</title>
+  </head>
+  <body class="google-auth">
+    <div class="container">
+      <div class="forms-container">
+        <div class="signin-signup">
+          <form method="post" action="{% url 'google_login' %}" class="sign-in-form">
+            {% csrf_token %}
+            <h2 class="title">Sign in with Google</h2>
+            <p class="social-text">
+              You are about to sign in using your Google account. Please confirm below.
+            </p>
+            <button class="btn" id="googleLoginBtn" type="submit">Continue</button>
+          </form>
+        </div>
+      </div>
+      <div class="panels-container">
+        <div class="panel left-panel">
+          <div class="content">
+            <h3>Welcome Back!</h3>
+            <p>
+              Use your Google account to securely sign in and access the platform.
+            </p>
+          </div>
+          <img src="{% static 'user/images/blue-puzzle.png' %}" class="image" alt="Google Login" />
+        </div>
+      </div>
+    </div>
+    <script src="{% static 'user/js/auth_page.js' %}"></script>
+  </body>
+</html>

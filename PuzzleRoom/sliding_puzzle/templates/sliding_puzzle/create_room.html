@@ -1,0 +1,46 @@
+<!--C:\Users\beka\OneDrive\Desktop\Year4DjangoMajor-Project\DjangoProject\PuzzleRoom\sliding_puzzle\templates\sliding_puzzle\create_room.html-->
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Room</title>
+    <meta name="csrf-token" content="{{ csrf_token }}">
+    <link rel="stylesheet" href="{% static 'user/css/create_room.css' %}">
+    {% include 'navbar/navbar.html' %}
+</head>
+<body>
+    <!-- Form for creating a puzzle room -->
+    <form class="createRoomForm" id="createRoomForm" enctype="multipart/form-data" method="POST">
+        {% csrf_token %}
+        <div>
+            <label for="roomName">Room Name:</label>
+            <input type="text" id="roomName" name="roomName" required>
+        </div>
+
+        <div>
+            <label class="difficulty_label" for="difficulty">Select Difficulty:</label>
+            <select id="difficulty" name="difficulty" required>
+                <option value="easy">Easy</option>
+                <option value="medium">Medium</option>
+                <option value="hard">Hard</option>
+            </select>
+        </div>
+
+        <div class="drag-area" id="dragArea">
+            <p>Drag & Drop to upload an image or <span id="browseLink">Browse</span></p>
+            <input type="file" id="fileInput" name="puzzleImage" accept="image/*" hidden required>
+        </div>
+
+        <!-- Image preview -->
+        <img id="imagePreview" class="image-preview" src="" alt="Image Preview" style="display: none;">
+
+        <!-- Submit button -->
+        <button class="create-room-btn-inside" id="createRoomBtn">Create Room</button>
+    </form>
+
+    <!-- Include your JavaScript -->
+    <script src="{% static 'user/js/CreateRoom.js' %}"></script>
+</body>
+</html>

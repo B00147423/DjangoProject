@@ -1,0 +1,51 @@
+.main-content {
+    padding: 100px 40px; /* Add padding to account for fixed navbar */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .main-content h1 {
+    font-size: 2.5rem;
+    color: #333;
+    margin-bottom: 20px;
+  }
+  
+  .dashboard-btn {
+    background-color: #d6eaff;
+    border: none;
+    color: #000;
+    padding: 20px 40px;
+    font-size: 1.5rem;
+    border-radius: 30px;
+    box-shadow: 4px 4px 15px rgba(0, 0, 0, 0.1);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin: 15px;
+  }
+  
+  .dashboard-btn:hover {
+    background-color: #22A1F5;
+    color: white;
+    box-shadow: 5px 5px 25px rgba(0, 0, 0, 0.2);
+  }
+  
+  .dashboard-btn i {
+    margin-right: 10px;
+    font-size: 1.2rem;
+  }
+  
+  .activity-feed {
+    margin-top: 40px;
+    background-color: #f7f9ff;
+    padding: 20px;
+    border-radius: 20px;
+    box-shadow: 2px 2px 15px rgba(0, 0, 0, 0.1);
+  }
+  
+  .activity-feed h3 {
+    font-size: 1.5rem;
+    color: #000;
+  }
+  

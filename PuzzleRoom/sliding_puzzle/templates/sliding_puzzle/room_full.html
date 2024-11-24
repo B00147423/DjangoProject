@@ -1,0 +1,16 @@
+<!-- rooms/templates/rooms/room_full.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Room Full</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'user/css/room_full.css' %}">
+    {% include 'navbar/navbar.html' %}
+</head>
+<body>
+    <h1>Room is Full</h1>
+    <p>Sorry, this room already has two participants.</p>
+    <a href="{% url 'dashboard' %}">Go Back Home</a>
+</body>
+</html>

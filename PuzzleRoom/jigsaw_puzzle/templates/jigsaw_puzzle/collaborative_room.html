@@ -1,0 +1,178 @@
+<!-- templates/jigsaw_puzzle/collaborative_room.html -->
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Collaborative Puzzle Room</title>
+    <style>
+        .piece {
+            position: absolute;
+            width: 100px;  /* Adjust according to your piece size */
+            height: 100px;
+            background-size: cover;
+            cursor: grab;
+            user-select: none;
+        }
+        .piece:active {
+            cursor: grabbing;
+        }
+        #puzzle-container {
+            position: relative;
+            width: 400px;  /* Adjust according to your puzzle size */
+            height: 400px;
+            border: 1px solid #333;
+            overflow: hidden;
+        }
+    </style>
+</head>
+<body>
+    <h1>Collaborative Puzzle Room: {{ room.name }}</h1>
+    <p>Both players are working together to solve the puzzle.</p>
+
+    <!-- Shared puzzle grid for collaboration -->
+    <div id="puzzle-container"></div>
+
+    <script>
+        let piecesData = JSON.parse("{{ pieces_data|escapejs }}");
+        const playerRole = "{{ player_role }}";
+        const roomId = "{{ room.id }}";
+        const socket = new WebSocket(`ws://${window.location.host}/ws/puzzle/${roomId}/`);
+
+        // Variables to keep track of dragging state
+        let draggedPiece = null;
+        let offsetX = 0;
+        let offsetY = 0;
+
+        // Render puzzle pieces on the board
+        function renderPuzzlePieces() {
+            const container = document.getElementById("puzzle-container");
+            container.innerHTML = '';  // Clear any existing pieces
+            piecesData.forEach(piece => {
+                const pieceElement = document.createElement("div");
+                pieceElement.classList.add("piece");
+                pieceElement.style.backgroundImage = `url(${piece.image_url})`;
+                pieceElement.style.left = piece.x + "px";
+                pieceElement.style.top = piece.y + "px";
+                pieceElement.dataset.pieceId = piece.id;
+
+                // Add event listeners for drag-and-drop
+                pieceElement.addEventListener("mousedown", onMouseDown);
+                pieceElement.addEventListener("touchstart", onTouchStart);
+
+                container.appendChild(pieceElement);
+            });
+        }
+
+        function onMouseDown(e) {
+            e.preventDefault();
+            draggedPiece = e.target;
+            offsetX = e.clientX - draggedPiece.offsetLeft;
+            offsetY = e.clientY - draggedPiece.offsetTop;
+
+            document.addEventListener("mousemove", onMouseMove);
+            document.addEventListener("mouseup", onMouseUp);
+        }
+
+        function onMouseMove(e) {
+            if (!draggedPiece) return;
+
+            const container = document.getElementById("puzzle-container");
+
+            let newX = e.clientX - offsetX;
+            let newY = e.clientY - offsetY;
+
+            // Restrict movement within the container
+            newX = Math.max(0, Math.min(newX, container.offsetWidth - draggedPiece.offsetWidth));
+            newY = Math.max(0, Math.min(newY, container.offsetHeight - draggedPiece.offsetHeight));
+
+            draggedPiece.style.left = `${newX}px`;
+            draggedPiece.style.top = `${newY}px`;
+        }
+
+        function onMouseUp(e) {
+            if (!draggedPiece) return;
+
+            const newX = draggedPiece.offsetLeft;
+            const newY = draggedPiece.offsetTop;
+            const pieceId = draggedPiece.dataset.pieceId;
+
+            // Send the new position to the server
+            socket.send(JSON.stringify({
+                type: 'piece_move',
+                piece_id: pieceId,
+                new_x: newX,
+                new_y: newY
+            }));
+
+            draggedPiece = null;
+            document.removeEventListener("mousemove", onMouseMove);
+            document.removeEventListener("mouseup", onMouseUp);
+        }
+
+        function onTouchStart(e) {
+            e.preventDefault();
+            draggedPiece = e.target;
+            const touch = e.touches[0];
+            offsetX = touch.clientX - draggedPiece.offsetLeft;
+            offsetY = touch.clientY - draggedPiece.offsetTop;
+
+            document.addEventListener("touchmove", onTouchMove);
+            document.addEventListener("touchend", onTouchEnd);
+        }
+
+        function onTouchMove(e) {
+            if (!draggedPiece) return;
+
+            const touch = e.touches[0];
+            const container = document.getElementById("puzzle-container");
+
+            let newX = touch.clientX - offsetX;
+            let newY = touch.clientY - offsetY;
+
+            // Restrict movement within the container
+            newX = Math.max(0, Math.min(newX, container.offsetWidth - draggedPiece.offsetWidth));
+            newY = Math.max(0, Math.min(newY, container.offsetHeight - draggedPiece.offsetHeight));
+
+            draggedPiece.style.left = `${newX}px`;
+            draggedPiece.style.top = `${newY}px`;
+        }
+
+        function onTouchEnd(e) {
+            if (!draggedPiece) return;
+
+            const newX = draggedPiece.offsetLeft;
+            const newY = draggedPiece.offsetTop;
+            const pieceId = draggedPiece.dataset.pieceId;
+
+            // Send the new position to the server
+            socket.send(JSON.stringify({
+                type: 'piece_move',
+                piece_id: pieceId,
+                new_x: newX,
+                new_y: newY
+            }));
+
+            draggedPiece = null;
+            document.removeEventListener("touchmove", onTouchMove);
+            document.removeEventListener("touchend", onTouchEnd);
+        }
+
+        // WebSocket message handling
+        socket.onmessage = function(event) {
+            const data = JSON.parse(event.data);
+            if (data.type === 'piece_move') {
+                const pieceElement = document.querySelector(`[data-piece-id="${data.piece_id}"]`);
+                if (pieceElement) {
+                    pieceElement.style.left = `${data.new_x}px`;
+                    pieceElement.style.top = `${data.new_y}px`;
+                }
+            } else if (data.type === 'init_pieces') {
+                piecesData = data.pieces;
+                renderPuzzlePieces();
+            }
+        };
+
+        renderPuzzlePieces();
+    </script>
+</body>
+</html>

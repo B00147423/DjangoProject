@@ -1,4 +1,3 @@
-apiVersion: core.choreo.dev/v1beta1
 kind: ComponentConfig
 spec:
   inbound:

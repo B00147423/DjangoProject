@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Email Verification Pending</title>
+    <script>
+        // Function to periodically check if the user's email is verified
+        async function checkVerificationStatus() {
+            try {
+                const response = await fetch("{% url 'pending_verification_status' %}");
+                const data = await response.json();
+
+                if (data.is_verified) {
+                    // Redirect to the dashboard if the user is verified
+                    window.location.href = "{% url 'dashboard' %}";
+                }
+            } catch (error) {
+                console.error("Error checking verification status:", error);
+            }
+        }
+
+        // Check verification status every 5 seconds
+        setInterval(checkVerificationStatus, 5000);
+    </script>
+</head>
+<body>
+    <h2>Account Verification Pending</h2>
+    <p>Hello {{ user.username }},</p>
+    <p>Your account is currently not verified. Please check your email inbox (and spam folder) for the verification link. You cannot access the full features until your email is verified.</p>
+    <p>If you did not receive the verification email, you can <a href="{% url 'resend_verification_email' %}">request a new verification link</a>.</p>
+</body>
+</html>

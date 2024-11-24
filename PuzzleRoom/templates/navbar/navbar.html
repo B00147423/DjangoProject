@@ -1,0 +1,63 @@
+<!-- C:\Users\beka\OneDrive\Desktop\Year4DjangoMajor-Project\DjangoProject\PuzzleRoom\templates\navbar\navbar.html -->
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PuzzleRoom</title>
+
+    <!-- Box Icons and Font Awesome -->
+    <link rel="stylesheet" href="https://unpkg.com/boxicons@latest/css/boxicons.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+
+<body>
+    <!-- Navbar -->
+    <nav class="bg-white shadow-md p-4">
+        <div class="container mx-auto flex justify-between items-center">
+            <!-- Logo and App Name -->
+            <div class="flex items-center space-x-2">
+                <i class="fas fa-puzzle-piece text-blue-500 text-2xl"></i>
+                <span class="text-2xl font-bold text-blue-500">IoT Puzzle Room</span>
+            </div>
+
+            <!-- Navigation Links -->
+            <div class="flex items-center space-x-6">
+                <a href="#" class="flex items-center px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-100 transition">
+                    <i class="fas fa-home mr-2"></i> Home
+                </a>
+
+                {% if user.is_authenticated %}
+                <a href="{% url 'logout_page' %}" class="flex items-center px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-100 transition">
+                    <i class='bx bxs-log-out mr-2'></i> Logout
+                </a>
+                <a href="#" class="flex items-center px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-100 transition">
+                    <i class="fas fa-users mr-2"></i> Join Room
+                </a>
+                <a href="#" class="flex items-center px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-100 transition">
+                    <i class="fas fa-user-circle mr-2"></i> Profile
+                </a>
+                <a href="{% url 'settings' %}" class="flex items-center px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-100 transition">
+                    <i class="fas fa-cog mr-2"></i> Settings
+                </a>
+                {% else %}
+                <a href="{% url 'auth_page' %}" class="flex items-center px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-100 transition">
+                    <i class='bx bxs-log-in mr-2'></i> Login
+                </a>
+                {% endif %}
+            </div>
+
+            <!-- User Welcome Message -->
+            <div class="text-sm text-gray-700">
+                {% if user.is_authenticated %}
+                    Welcome, <span class="font-bold">{{ user.username }}</span>
+                {% else %}
+                    Welcome, Guest
+                {% endif %}
+            </div>
+        </div>
+    </nav>
+</body>
+</html>

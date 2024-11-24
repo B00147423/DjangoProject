@@ -1,19 +1,5 @@
-# Virtual environment
-.venv/
-
-# Python
-__pycache__/
-*.py[cod]
-
-# Environment variables
+# Ignore .env file
 .env
 
-# Database
-*.sqlite3
-
-# Logs
-*.log
-
-# OS files
-.DS_Store
-Thumbs.db
+# Ignore venv directory
+venv/

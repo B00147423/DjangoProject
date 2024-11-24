@@ -1,0 +1,612 @@
+<!-- templates/jigsaw_puzzle/puzzle_room.html -->
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{{ player1 }} VS {{ player2 }} Puzzle</title>
+    <script src="https://unpkg.com/konva@8.4.2/konva.min.js"></script>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            font-family: Arial, sans-serif;
+            overflow: hidden;
+        }
+        #container {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+        #header {
+            text-align: center;
+            padding: 10px;
+            background-color: #f0f0f0;
+            font-size: 1.5rem;
+        }
+        #game-area {
+            display: flex;
+            flex: 1;
+            flex-direction: row;
+            overflow: hidden;
+        }
+        #player1-container, #player2-container {
+            width: 50%;
+            padding: 10px;
+            position: relative;
+            box-sizing: border-box;
+        }
+        #player1-container {
+            border-right: 2px solid black;
+        }
+        .grid-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 70%;
+            border: 1px solid #ccc;
+            background-color: #fff;
+        }
+        .blurred {
+            filter: blur(5px);
+            pointer-events: none;
+        }
+        .pieces-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            justify-content: center;
+            background-color: #e0e0e0;
+            padding: 10px;
+            height: 30%;
+            overflow-y: auto;
+        }
+        .piece {
+            width: 50px;
+            height: 50px;
+            background-color: #d3d3d3;
+            border: 1px solid #ccc;
+            cursor: pointer;
+            background-size: cover;
+        }
+        .piece.disabled {
+            opacity: 0.5;
+            pointer-events: none;
+        }
+        .piece.selected {
+            border: 2px solid green;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            #game-area {
+                flex-direction: column;
+            }
+            #player1-container, #player2-container {
+                width: 100%;
+                padding: 5px;
+                height: 50%;
+            }
+            #player1-container {
+                border-right: none;
+                border-bottom: 2px solid black;
+            }
+            #header {
+                font-size: 1.2rem;
+                padding: 8px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .piece {
+                width: 40px;
+                height: 40px;
+            }
+            #header {
+                font-size: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="container">
+        <div id="header">
+            <h1>{{ player1 }} VS {{ player2 }} Puzzle</h1>
+        </div>
+        <div id="game-area">
+            <!-- Player 1's container -->
+            <div id="player1-container">
+                <div class="grid-container" id="player1-grid-container">
+                    <div id="player1-grid"></div>
+                </div>
+                <div class="pieces-container" id="player1-pieces"></div>
+            </div>
+            <!-- Player 2's container -->
+            <div id="player2-container">
+                <div class="grid-container" id="player2-grid-container">
+                    <div id="player2-grid"></div>
+                </div>
+                <div class="pieces-container" id="player2-pieces"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- CSRF token and game settings -->
+    <script>
+        const csrfToken = '{{ csrf_token }}';
+        const difficulty = '{{ room.difficulty }}';
+        const playerRole = '{{ player_role }}';
+
+        // Update your DOMContentLoaded event listener
+        document.addEventListener('DOMContentLoaded', () => {
+            if (playerRole === 'player1') {
+                document.getElementById('player2-grid').classList.add('blurred');
+            } else if (playerRole === 'player2') {
+                document.getElementById('player1-grid').classList.add('blurred');
+            }
+
+            // Load initial pieces
+            const piecesData = JSON.parse(document.getElementById('puzzle-data').textContent);
+            loadInitialPieces(piecesData);
+        });
+    </script>
+
+    <!-- Puzzle data from Django -->
+    <script id="puzzle-data" type="application/json">
+        {{ pieces_data|safe }}
+    </script>
+
+    <script>
+        const piecesDataElement = document.getElementById('puzzle-data');
+        const pieces = JSON.parse(piecesDataElement.textContent);
+
+        let gridRows, gridCols;
+        const baseGridSize = 100;
+        let selectedPiece = null;
+        const placedPieces = {};
+
+        // Set grid dimensions based on difficulty
+        if (difficulty === 'easy') {
+            gridRows = 4;
+            gridCols = 4;
+        } else if (difficulty === 'medium') {
+            gridRows = 6;
+            gridCols = 6;
+        } else if (difficulty === 'hard') {
+            gridRows = 8;
+            gridCols = 8;
+        }
+
+        // Initialize stages for each player
+        const player1Stage = new Konva.Stage({
+            container: 'player1-grid',
+            width: baseGridSize * gridCols,
+            height: baseGridSize * gridRows,
+        });
+        const player1Layer = new Konva.Layer();
+        player1Stage.add(player1Layer);
+
+        const player2Stage = new Konva.Stage({
+            container: 'player2-grid',
+            width: baseGridSize * gridCols,
+            height: baseGridSize * gridRows,
+        });
+        const player2Layer = new Konva.Layer();
+        player2Stage.add(player2Layer);
+
+        
+// In the loadPuzzlePieces function, update the image URL handling:
+function loadPuzzlePieces(piecesContainerId, piecesData) {
+    const piecesContainer = document.getElementById(piecesContainerId);
+    
+    // Only load pieces into the current player's container
+    if ((playerRole === 'player1' && piecesContainerId === 'player1-pieces') ||
+        (playerRole === 'player2' && piecesContainerId === 'player2-pieces')) {
+        
+        piecesData.forEach(piece => {
+            const pieceElement = document.createElement('div');
+            pieceElement.classList.add('piece');
+            pieceElement.dataset.pieceId = piece.id;
+            pieceElement.style.backgroundImage = `url('${piece.image_url}')`;
+            
+            pieceElement.addEventListener('click', () => {
+                if (selectedPiece) selectedPiece.classList.remove('selected');
+                selectedPiece = pieceElement;
+                pieceElement.classList.add('selected');
+            });
+
+            if (piece.is_placed) {
+                pieceElement.classList.add('disabled');
+                placedPieces[piece.id] = true;
+            }
+
+            piecesContainer.appendChild(pieceElement);
+        });
+    }
+}
+
+
+        loadPuzzlePieces('player1-pieces', pieces);
+        loadPuzzlePieces('player2-pieces', pieces);
+
+        function createGrid(stage, layer, player) {
+            const isPlayerGrid = (player === 'player1' && playerRole === 'player1') ||
+                                 (player === 'player2' && playerRole === 'player2');
+
+            function setupGrid() {
+                layer.destroyChildren();
+
+                const currentGridSize = stage.width() / gridCols;
+
+                for (let i = 0; i < gridCols; i++) {
+                    for (let j = 0; j < gridRows; j++) {
+                        const square = new Konva.Rect({
+                            x: i * currentGridSize,
+                            y: j * currentGridSize,
+                            width: currentGridSize,
+                            height: currentGridSize,
+                            stroke: 'gray',
+                            strokeWidth: 1,
+                        });
+
+                        if (isPlayerGrid) {
+                            square.on('click', () => {
+                                placePiece(square, layer); // Pass the layer
+                            });
+                        }
+
+                        layer.add(square);
+                    }
+                }
+                layer.draw();
+            }
+
+            setupGrid();
+
+            // Add window resize handler
+            window.addEventListener('resize', () => {
+                // Redraw pieces in their saved positions
+                Object.entries(placedPieces).forEach(([pieceId, pieceData]) => {
+                    const layer = playerRole === 'player1' ? player1Layer : player2Layer;
+                    addPieceToLayer(layer, null, pieceData.x, pieceData.y, pieceId, pieceData.imageUrl);
+                });
+            });
+        }
+
+        createGrid(player1Stage, player1Layer, 'player1');
+        createGrid(player2Stage, player2Layer, 'player2');
+
+        const roomName = "{{ room.id }}";  // Pass the room ID from Django to JavaScript
+        const socket = new WebSocket(`ws://${window.location.host}/ws/puzzle/${roomName}/`);
+
+// Add this at the top of your JavaScript
+let isWebSocketConnected = false;
+
+// Update your socket connection handling
+socket.onopen = function(e) {
+    console.log('WebSocket connection established');
+    isWebSocketConnected = true;
+};
+
+socket.onclose = function(e) {
+    console.log('WebSocket connection closed');
+    isWebSocketConnected = false;
+};
+
+
+// Update sendMove function to check connection
+function sendMove(pieceId, newX, newY, imageUrl) {
+    if (!isWebSocketConnected) {
+        console.error('WebSocket not connected!');
+        return;
+    }
+    
+    console.log('Sending move:', {pieceId, newX, newY, playerRole, imageUrl}); // Debug log
+    
+    socket.send(JSON.stringify({
+        'type': 'piece_move',
+        'piece_id': pieceId,
+        'new_x': newX,
+        'new_y': newY,
+        'player_role': playerRole,
+        'image_url': imageUrl
+    }));
+}
+
+
+function placePiece(square, layer) {
+    if (selectedPiece && !placedPieces[`${playerRole}_${selectedPiece.dataset.pieceId}`]) {
+        const pieceId = selectedPiece.dataset.pieceId;
+        const newX = square.x();
+        const newY = square.y();
+        const pieceImageUrl = selectedPiece.style.backgroundImage.slice(5, -2);
+
+        // Create new image node for the piece
+        const imageNode = new Konva.Image({
+            x: newX,
+            y: newY,
+            width: baseGridSize,
+            height: baseGridSize,
+            image: new Image(),
+            id: pieceId
+        });
+
+        // Add right-click handler for removal
+        imageNode.on('contextmenu', (e) => {
+            e.evt.preventDefault();
+            removePieceFromGrid(pieceId, layer);
+        });
+
+        // Set attributes and load image
+        imageNode.setAttr('placed_by', playerRole);
+        imageNode.image().src = pieceImageUrl;
+        imageNode.image().onload = () => {
+            layer.add(imageNode);
+            layer.draw();
+        };
+
+        // Send move to server
+        sendMove(pieceId, newX, newY, pieceImageUrl);
+
+        // Track placed piece
+        const placedKey = `${playerRole}_${pieceId}`;
+        placedPieces[placedKey] = {
+            x: newX,
+            y: newY,
+            imageUrl: pieceImageUrl
+        };
+
+        // Update piece in container
+        selectedPiece.classList.add('disabled');
+        selectedPiece.classList.remove('selected');
+        selectedPiece = null;
+    }
+}
+function addPieceToLayer(layer, selectedPiece, x, y, pieceId, imageUrl = null) {
+    const imageObj = new Image();
+    imageObj.onload = () => {
+        const imageNode = new Konva.Image({
+            x: x,
+            y: y,
+            width: baseGridSize,
+            height: baseGridSize,
+            image: imageObj,
+            id: pieceId,
+        });
+        layer.add(imageNode);
+        layer.draw();
+    };
+    imageObj.onerror = () => {
+        console.error('Failed to load piece image');
+    };
+
+    // Use provided imageUrl or get it from selectedPiece
+    const finalImageUrl = imageUrl || (selectedPiece ? selectedPiece.style.backgroundImage.replace(/url\(['"](.+)['"]\)/, '$1') : '');
+    imageObj.src = finalImageUrl;
+}
+// Update socket message handler
+socket.onmessage = function(event) {
+    const data = JSON.parse(event.data);
+    console.log('Received WebSocket message:', data);
+
+    if (data.type === 'piece_move') {
+        const pieceId = data.piece_id;
+        const newX = data.new_x;
+        const newY = data.new_y;
+        const movingPlayerRole = data.player_role;
+        const imageUrl = data.image_url;
+
+        // Determine target layer
+        const targetLayer = movingPlayerRole === 'player1' ? player1Layer : player2Layer;
+        
+        // Update piece on grid
+        updatePieceOnGrid(targetLayer, pieceId, newX, newY, imageUrl);
+
+        // Update tracking and UI
+        const placedKey = `${movingPlayerRole}_${pieceId}`;
+        placedPieces[placedKey] = {
+            x: newX,
+            y: newY,
+            imageUrl: imageUrl
+        };
+
+        // Disable piece in container
+        const containerSelector = `#${movingPlayerRole}-pieces [data-piece-id="${pieceId}"]`;
+        const pieceElement = document.querySelector(containerSelector);
+        if (pieceElement) {
+            pieceElement.classList.add('disabled');
+        }
+    } 
+    else if (data.type === 'piece_remove') {
+        const pieceId = data.piece_id;
+        const removingPlayerRole = data.player_role;
+        const targetLayer = removingPlayerRole === 'player1' ? player1Layer : player2Layer;
+        
+        // Remove piece from grid
+        const piece = targetLayer.findOne(`#${pieceId}`);
+        if (piece) {
+            piece.destroy();
+            targetLayer.draw();
+        }
+
+        // Re-enable piece in container
+        const containerSelector = `#${removingPlayerRole}-pieces [data-piece-id="${pieceId}"]`;
+        const pieceElement = document.querySelector(containerSelector);
+        if (pieceElement) {
+            pieceElement.classList.remove('disabled');
+        }
+
+        // Remove from tracking
+        const placedKey = `${removingPlayerRole}_${pieceId}`;
+        delete placedPieces[placedKey];
+    }
+    else if (data.type === 'init_pieces') {
+        console.log('Initializing pieces:', data.pieces);
+        data.pieces.forEach(piece => {
+            if (piece.is_placed) {
+                const targetLayer = piece.placed_by === 'player1' ? player1Layer : player2Layer;
+                updatePieceOnGrid(
+                    targetLayer, 
+                    piece.id, 
+                    piece.x, 
+                    piece.y, 
+                    piece.image_url
+                );
+                
+                const placedKey = `${piece.placed_by}_${piece.id}`;
+                placedPieces[placedKey] = {
+                    x: piece.x,
+                    y: piece.y,
+                    imageUrl: piece.image_url
+                };
+
+                const containerSelector = `#${piece.placed_by}-pieces [data-piece-id="${piece.id}"]`;
+                const pieceElement = document.querySelector(containerSelector);
+                if (pieceElement) {
+                    pieceElement.classList.add('disabled');
+                }
+            }
+        });
+    }
+};
+
+
+
+
+function updatePieceOnGrid(layer, pieceId, newX, newY, imageUrl, isOpponentPiece = false) {
+    const existingPiece = layer.findOne(`#${pieceId}`);
+    if (existingPiece) {
+        existingPiece.x(newX);
+        existingPiece.y(newY);
+    } else {
+        const imageNode = new Konva.Image({
+            x: newX,
+            y: newY,
+            width: baseGridSize,
+            height: baseGridSize,
+            image: new Image(),
+            id: pieceId,
+            opacity: isOpponentPiece ? 0.7 : 1,
+        });
+
+        // Add right-click handler for piece removal
+        imageNode.on('contextmenu', (e) => {
+            e.evt.preventDefault(); // Prevent default context menu
+            
+            // Only allow the current player to remove their own pieces
+            if (playerRole === (imageNode.getAttr('placed_by') || playerRole)) {
+                const pieceContainer = document.querySelector(`#${playerRole}-pieces [data-piece-id="${pieceId}"]`);
+                if (pieceContainer) {
+                    // Re-enable the piece in the container
+                    pieceContainer.classList.remove('disabled');
+                }
+                
+                // Remove from grid
+                imageNode.destroy();
+                layer.draw();
+
+                // Remove from placed pieces tracking
+                const placedKey = `${playerRole}_${pieceId}`;
+                delete placedPieces[placedKey];
+
+                // Notify other players through WebSocket
+                if (isWebSocketConnected) {
+                    socket.send(JSON.stringify({
+                        'type': 'piece_remove',
+                        'piece_id': pieceId,
+                        'player_role': playerRole
+                    }));
+                }
+            }
+        });
+
+        // Store who placed this piece
+        imageNode.setAttr('placed_by', playerRole);
+
+        imageNode.image().src = imageUrl;
+        imageNode.image().onload = () => {
+            layer.add(imageNode);
+            layer.draw();
+        };
+    }
+    layer.draw();
+}
+
+
+
+
+// Add this function after your other function declarations
+function loadInitialPieces(pieces) {
+    pieces.forEach(piece => {
+        if (piece.is_placed) {
+            const isOpponentPiece = (playerRole === 'player1' && piece.placed_by === 'player2') ||
+                                  (playerRole === 'player2' && piece.placed_by === 'player1');
+            const targetLayer = piece.placed_by === 'player1' ? player1Layer : player2Layer;
+            updatePieceOnGrid(
+                targetLayer,
+                piece.id,
+                piece.x,
+                piece.y,
+                piece.image_url,
+                isOpponentPiece
+            );
+        }
+    });
+}
+
+function removePieceFromGrid(pieceId, layer) {
+    console.log('Removing piece:', pieceId);
+    
+    // Only remove if it's the current player's piece
+    const placedKey = `${playerRole}_${pieceId}`;
+    if (placedPieces[placedKey]) {
+        // Re-enable piece in container
+        const pieceContainer = document.querySelector(`#${playerRole}-pieces [data-piece-id="${pieceId}"]`);
+        if (pieceContainer) {
+            pieceContainer.classList.remove('disabled');
+        }
+
+        // Remove from grid
+        const piece = layer.findOne(`#${pieceId}`);
+        if (piece) {
+            piece.destroy();
+            layer.draw();
+        }
+
+        // Remove from tracking
+        delete placedPieces[placedKey];
+
+        // Send removal message
+        if (isWebSocketConnected) {
+            socket.send(JSON.stringify({
+                'type': 'piece_remove',
+                'piece_id': pieceId,
+                'player_role': playerRole
+            }));
+        }
+    }
+}
+
+// Add this to your existing code where you set up piece click handlers
+function setupPieceClickHandlers() {
+    const containers = document.querySelectorAll('.pieces-container');
+    containers.forEach(container => {
+        container.addEventListener('click', (e) => {
+            if (e.target.classList.contains('piece')) {
+                if (selectedPiece) {
+                    selectedPiece.classList.remove('selected');
+                }
+                selectedPiece = e.target;
+                selectedPiece.classList.add('selected');
+            }
+        });
+    });
+}
+
+// Call this function after the DOM is loaded
+document.addEventListener('DOMContentLoaded', setupPieceClickHandlers);
+
+    </script>
+</body>
+</html>

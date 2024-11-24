@@ -2,7 +2,11 @@
 from datetime import timedelta
 import os
 from pathlib import Path
-
+from dotenv import load_dotenv
+load_dotenv() 
+# Optional: Customize message tags (optional, for CSS styling)
+from django.contrib.messages import constants as message_constants
+import logging
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -19,26 +23,53 @@ DEBUG = True
 ALLOWED_HOSTS = ["*"]
 
 
-# Application definition
 
+# Application definition
 INSTALLED_APPS = [
+    'jigsaw_puzzle',
     'puzzles',
-    'rooms',
+    'sliding_puzzle',
     'user.apps.UserConfig',
+    
+    # Core Django apps
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+
+    # Django Allauth apps
+    'allauth',
+    'allauth.account',
+    'allauth.socialaccount',
+
+    # OAuth providers
+    'allauth.socialaccount.providers.github',
+    'allauth.socialaccount.providers.google',
+    # Removed duplicate 'django.contrib.messages',
+    # Other apps
     'oauth2_provider',
     'corsheaders',
     'rest_framework',
     'channels',
 ]
 
+SOCIALACCOUNT_PROVIDERS = {
+    'google': {
+        'SCOPE': ['profile', 'email'],
+        'APP': {
+            'client_id': os.environ.get('CLIENT_ID'),  # Fetch from environment variables
+            'secret': os.environ.get('CLIENT_SECRET'),  # Fetch from environment variables
+        },
+        'AUTH_PARAMS': {'access_type': 'online'},
+    }
+}
+
+
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -46,9 +77,15 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'allauth.account.middleware.AccountMiddleware', # Required for messages
 ]
 
 ROOT_URLCONF = 'PuzzleRoom.urls'
+
+AUTHENTICATION_BACKENDS = (
+    'django.contrib.auth.backends.ModelBackend',  # Django's default
+    'allauth.account.auth_backends.AuthenticationBackend',  # Allauth backend
+)
 
 TEMPLATES = [
     {
@@ -76,17 +113,6 @@ WSGI_APPLICATION = 'PuzzleRoom.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'PuzzleRoom',
-        'USER': 'postgres',
-        'PASSWORD': 'pass',
-        'HOST': '127.0.0.1',
-        'PORT': '5432',
-    }
-}
-
-DATABASES = {
-    'default': {
-        'ENGINE': 'postgresql://postgres.pqxcaxmnuisojsxinayh:[YOUR-PASSWORD]@aws-0-eu-west-1.pooler.supabase.com:6543/postgres',
         'NAME': 'PuzzleRoom',
         'USER': 'postgres',
         'PASSWORD': 'pass',
@@ -141,12 +167,14 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
 
-STATIC_URL = 'static/'
+STATIC_URL = '/static/'
 
 STATICFILES_DIRS = [
-    BASE_DIR / "user" / "static",
-
+    os.path.join(BASE_DIR, 'static'),  # This should point to the folder where your 'css' and 'js' directories are located.
 ]
+
+# Where static files will be collected (used in production).
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
 CSRF_TRUSTED_ORIGINS = ['http://localhost:3000', 
                         'https://your-production-domain.com'
@@ -170,9 +198,6 @@ CORS_ALLOW_METHODS = [
 CORS_ALLOW_CREDENTIALS = True
 
 
-STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, 'static'),
-]
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
@@ -191,19 +216,57 @@ AUTH_USER_MODEL = 'user.User'
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-ASGI_APPLICATION = 'PuzzleRoom.asgi.application' 
+ASGI_APPLICATION = 'PuzzleRoom.asgi.application'
+
 
 
 # settings.py
 
 CHANNEL_LAYERS = {
-    "default": {
-        "BACKEND": "channels_redis.core.RedisChannelLayer",
-        "CONFIG": {
-            "hosts": [("127.0.0.1", 6379)],
+    'default': {
+        'BACKEND': 'channels_redis.core.RedisChannelLayer',
+        'CONFIG': {
+            'hosts': [
+                "redis://default:v8k6iNVv7cIS71IRgvVoS57cib6wagSj@redis-17031.c243.eu-west-1-3.ec2.redns.redis-cloud.com:17031"
+            ],
         },
     },
 }
 
+
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+
+LOGIN_REDIRECT_URL = '/user/dashboard/'
+
+LOGOUT_REDIRECT_URL = '/'
+
+logging.basicConfig(
+    level=logging.DEBUG,
+    format='%(asctime)s %(levelname)s %(message)s',
+)
+SOCIALACCOUNT_AUTO_SIGNUP = True
+# This will show detailed logs for debugging purposes.
+
+
+MESSAGE_TAGS = {
+    message_constants.DEBUG: 'debug',
+    message_constants.INFO: 'info',
+    message_constants.SUCCESS: 'success',
+    message_constants.WARNING: 'warning', 
+    message_constants.ERROR: 'error',
+}
+
+SENDGRID_API_KEY = os.getenv('SENDGRID_API_KEY')
+
+# Email settings for SendGrid
+DEFAULT_FROM_EMAIL = 'b00147423@mytudublin.ie'  # Your verified sender email
+EMAIL_HOST = 'smtp.sendgrid.net'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'apikey'  # Always use "apikey" as the user
+EMAIL_HOST_PASSWORD = SENDGRID_API_KEY  # Use the SendGrid API key as the password
+
+print("SendGrid API Key:", SENDGRID_API_KEY)
+print("Email Backend:", DEFAULT_FROM_EMAIL)
