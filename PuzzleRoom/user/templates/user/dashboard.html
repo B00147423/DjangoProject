@@ -1,69 +1,318 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>IoT Puzzle Room Dashboard</title>
-    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-</head>
-<body class="bg-gray-100 min-h-screen">
-    {% include 'navbar/navbar.html' %}
+{% extends 'navbar/navbar.html' %}
+{% load static %}
 
-    <main class="container mx-auto mt-12 p-6 max-w-5xl"> <!-- Increased margin for more space -->
-        <h1 class="text-4xl font-extrabold mb-10 text-center text-blue-600">Welcome to Puzzle Room</h1> <!-- Enhanced text size and color -->
+{% block title %}Puzzle Room Dashboard{% endblock %}
 
-        <!-- Main Action Buttons -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <!-- Puzzle Creation Cards -->
-            <div class="bg-white border border-gray-200 rounded-lg shadow-lg p-8 transform hover:scale-105 transition duration-300">
-                <i class="fas fa-puzzle-piece text-blue-600 text-6xl mb-4"></i>
-                <h2 class="text-2xl font-semibold mb-2">Create Puzzle</h2>
-                <a href="{% url 'create_jigsaw_room' %}" class="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-4 rounded-full transition duration-300">
-                    Create Jigsaw Room
-                </a>
-            </div>
+{% block extra_head %}
+<style>
+    :root {
+        --primary-color: #00ff00;
+        --secondary-color: #ff00ff;
+        --background-color: #111;
+        --text-color: #fff;
+        --grid-background: rgba(255, 255, 255, 0.1);
+        --input-background: rgba(255, 255, 255, 0.1);
+        --input-border: #444;
+    }
 
-            <div class="bg-white border border-gray-200 rounded-lg shadow-lg p-8 transform hover:scale-105 transition duration-300">
-                <i class="fas fa-puzzle-piece text-blue-600 text-6xl mb-4"></i>
-                <h2 class="text-2xl font-semibold mb-2">Create Puzzle</h2>
-                <a href="{% url 'create_room' %}" class="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-4 rounded-full transition duration-300">
-                    Create sliding Puzzle Room
-                </a>
-            </div>
+    body {
+        display: flex;
+        flex-direction: column;
+        min-height: 100vh;
+        margin: 0;
+        padding: 0;
+        line-height: 1.6;
+        background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+        color: var(--text-color);
+        font-family: 'Roboto', sans-serif;
+    }
 
-            <!-- Join Room Button -->
-            <div class="bg-white border border-gray-200 rounded-lg shadow-lg p-8 transform hover:scale-105 transition duration-300">
-                <i class="fas fa-users text-blue-600 text-6xl mb-4"></i>
-                <h2 class="text-2xl font-semibold mb-2">Join Room</h2>
-                <a href="#" class="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-4 rounded-full transition duration-300">
-                    Join Existing Room
-                </a>
-            </div>
+    .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 2rem;
+    }
+
+    .logo {
+        font-family: 'Orbitron', sans-serif;
+        font-size: 1.5rem;
+        color: var(--primary-color);
+        text-shadow: 0 0 10px var(--primary-color);
+    }
+
+    .nav-links a:hover {
+        color: var(--primary-color);
+        text-shadow: 0 0 10px var(--primary-color);
+    }
+
+    main {
+        border-radius: 8px;
+        background-color: rgba(255, 255, 255, 0.05);
+        flex: 1 0 auto;
+        padding: 2rem;
+        text-align: center;
+        margin-top: 70px;
+        box-shadow: 0 0 20px rgba(0, 255, 255, 0.3);
+    }
+
+    h1, h2 {
+        font-family: 'Orbitron', sans-serif;
+        color: var(--primary-color);
+        margin-top: 75px;
+        text-shadow: 0 0 10px var(--primary-color);
+    }
+
+    .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 2rem;
+        margin: 2rem auto;
+        max-width: 1200px;
+        padding: 2rem;
+        text-align: center;
+        justify-content: center;
+    }
+
+    .card {
+        background-color: rgba(255, 255, 255, 0.1);
+        border-radius: 8px;
+        padding: 2rem;
+        text-align: center;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        box-shadow: 0 0 15px rgba(0, 255, 255, 0.2);
+    }
+
+    .card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 0 25px rgba(0, 255, 255, 0.4);
+    }
+
+    .card-icon {
+        font-size: 4rem;
+        color: var(--secondary-color);
+        margin-bottom: 1rem;
+        text-shadow: 0 0 15px var(--secondary-color);
+    }
+
+    .btn {
+        background-color: var(--primary-color);
+        color: var(--background-color);
+        border: none;
+        padding: 0.75rem 1.5rem;
+        font-size: 1rem;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: background-color 0.3s ease, box-shadow 0.3s ease;
+        font-family: 'Orbitron', sans-serif;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+
+    .btn:hover {
+        background-color: var(--secondary-color);
+        box-shadow: 0 0 15px var(--secondary-color);
+    }
+
+    .modal {
+        display: none;
+        position: fixed;
+        z-index: 1000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.7);
+    }
+
+    .modal-content {
+        background-color: var(--background-color);
+        border: 1px solid var(--secondary-color);
+        border-radius: 8px;
+        width: 90%;
+        max-width: 500px;
+        margin: 10% auto;
+        padding: 2rem;
+        animation: slide-down 0.3s ease-out;
+        box-shadow: 0 0 25px rgba(255, 0, 255, 0.3);
+    }
+
+    @keyframes slide-down {
+        from {
+            transform: translateY(-50px);
+            opacity: 0;
+        }
+        to {
+            transform: translateY(0);
+            opacity: 1;
+        }
+    }
+
+    .close {
+        color: var(--secondary-color);
+        float: right;
+        font-size: 28px;
+        font-weight: bold;
+        cursor: pointer;
+        transition: color 0.3s ease;
+    }
+
+    .close:hover {
+        color: var(--primary-color);
+    }
+
+    form {
+        display: flex;
+        flex-direction: column;
+    }
+
+    label {
+        margin-top: 1rem;
+        color: var(--primary-color);
+        font-family: 'Orbitron', sans-serif;
+    }
+
+    input, select {
+        margin-top: 0.5rem;
+        padding: 0.5rem;
+        background-color: var(--input-background);
+        border: 1px solid var(--input-border);
+        color: var(--text-color);
+        border-radius: 4px;
+        transition: box-shadow 0.3s ease;
+    }
+
+    input:focus, select:focus {
+        outline: none;
+        box-shadow: 0 0 10px var(--primary-color);
+    }
+
+    footer {
+        flex: 0 0 auto;
+        text-align: center;
+        padding: 2rem 0;
+        background-color: rgba(255, 255, 255, 0.1);
+        font-size: 0.9rem;
+        color: var(--text-color);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<main class="container">
+    <h1>Welcome to Puzzle Room</h1>
+
+    <div class="grid">
+        <div class="card">
+            <div class="card-icon">🧩</div>
+            <h2>Create Jigsaw Puzzle</h2>
+            <button onclick="toggleModal('createJigsawRoomModal')" class="btn">
+                Create Jigsaw Room
+            </button>
         </div>
 
-        <!-- Recent Activity Section -->
-        <div class="mt-12">
-            <div class="bg-white border border-gray-200 rounded-lg shadow-lg p-8">
-                <h2 class="text-2xl font-semibold mb-6">Recent Activity</h2>
-                <ul class="space-y-4">
-                    {% for activity in recent_activities %}
-                    <li class="flex items-center space-x-3">
-                        <i class="fas fa-clock text-gray-400"></i>
-                        <span class="text-gray-700">{{ activity.description }} - {{ activity.timestamp }}</span>
-                    </li>
-                    {% empty %}
-                    <li class="text-gray-500">No recent activities.</li>
-                    {% endfor %}
-                </ul>
-            </div>
+        <div class="card">
+            <div class="card-icon">🔢</div>
+            <h2>Create Sliding Puzzle</h2>
+            <button onclick="toggleModal('createSlidingRoomModal')" class="btn">
+                Create Sliding Room
+            </button>
         </div>
-    </main>
 
-    <footer class="bg-white mt-12 py-6">
-        <div class="container mx-auto text-center text-gray-600">
-            <p>&copy; 2024 IoT Puzzle Room. All rights reserved.</p>
+        <div class="card">
+            <div class="card-icon">👥</div>
+            <h2>Join Room</h2>
+            <button onclick="toggleModal('joinRoomModal')" class="btn">
+                Join Existing Room
+            </button>
         </div>
-    </footer>
-</body>
-</html>
+    </div>
+
+    <!-- Create Jigsaw Room Modal -->
+    <div id="createJigsawRoomModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="toggleModal('createJigsawRoomModal')">&times;</span>
+            <h2>Create a New Jigsaw Room</h2>
+            <form id="createJigsawRoomForm" method="post" enctype="multipart/form-data" action="{% url 'create_jigsaw_room' %}">
+                {% csrf_token %}
+                <label for="id_name">Room Name</label>
+                <input type="text" name="name" id="id_name" required>
+                
+                <label for="id_puzzle_image">Puzzle Image</label>
+                <input type="file" name="puzzle_image" id="id_puzzle_image" required>
+                
+                <label for="id_difficulty">Difficulty</label>
+                <select name="difficulty" id="id_difficulty" required>
+                    <option value="easy">Easy</option>
+                    <option value="medium">Medium</option>
+                    <option value="hard">Hard</option>
+                </select>
+                
+                <label for="id_mode">Mode</label>
+                <select name="mode" id="id_mode" required>
+                    <option value="versus">Versus (1v1)</option>
+                    <option value="collaborative">Collaborative</option>
+                </select>
+                
+                <button type="submit" class="btn" style="margin-top: 1rem;">Create Room</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Create Sliding Room Modal -->
+    <div id="createSlidingRoomModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="toggleModal('createSlidingRoomModal')">&times;</span>
+            <h2>Create a New Sliding Room</h2>
+            <form id="createSlidingRoomForm" method="post" enctype="multipart/form-data" action="{% url 'create_room' %}">
+                {% csrf_token %}
+                <label for="id_name">Room Name</label>
+                <input type="text" name="name" id="id_name" required>
+                
+                <label for="id_puzzle_image">Puzzle Image</label>
+                <input type="file" name="puzzle_image" id="id_puzzle_image" required>
+                
+                <label for="id_difficulty">Difficulty</label>
+                <select name="difficulty" id="id_difficulty" required>
+                    <option value="easy">Easy</option>
+                    <option value="medium">Medium</option>
+                    <option value="hard">Hard</option>
+                </select>
+                
+                <button type="submit" class="btn" style="margin-top: 1rem;">Create Room</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Join Room Modal -->
+    <div id="joinRoomModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="toggleModal('joinRoomModal')">&times;</span>
+            <h2>Join a Room</h2>
+            <form id="joinRoomForm" method="post" action="{% url 'jigsaw_puzzle:join_room' %}">
+                {% csrf_token %}
+                <label for="room_code">Room Code</label>
+                <input type="text" name="room_code" id="room_code" required>
+                
+                <button type="submit" class="btn" style="margin-top: 1rem;">Join Room</button>
+            </form>
+        </div>
+    </div>
+    
+</main>
+
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    function toggleModal(modalId) {
+        var modal = document.getElementById(modalId);
+        modal.style.display = modal.style.display === "block" ? "none" : "block";
+    }
+
+    window.onclick = function(event) {
+        if (event.target.className === 'modal') {
+            event.target.style.display = "none";
+        }
+    };
+</script>
+{% endblock %}

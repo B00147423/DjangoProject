@@ -1,5 +1,4 @@
 {% load static %}
-{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -43,9 +42,9 @@
             position: fixed;
             top: 50%;
             left: 50%;
-            width: 100vw; /* Ensure the video takes the full width of the viewport */
-            height: 100vh; /* Ensure the video takes the full height of the viewport */
-            object-fit: cover; /* Ensures the video covers the background area without distortion */
+            width: 100vw;
+            height: 100vh;
+            object-fit: cover;
             transform: translate(-50%, -50%);
             z-index: -2;
         }
@@ -59,7 +58,6 @@
             height: 100%;
             background: rgba(0, 0, 0, 0.5);
             z-index: -1;
-           
         }
 
         /* Container */
@@ -104,7 +102,6 @@
         /* Social Icons */
         .social-icons {
             margin-top: 20px;
-            
         }
 
         .social-icons a {
@@ -134,12 +131,12 @@
         /* Media Queries */
         @media only screen and (max-width: 768px) {
             .bg-video {
-                width: 100vw; /* Ensure the video width fits the viewport */
-                height: 100vh; /* Ensure the video height fits the viewport */
-                object-fit: cover; /* Maintain aspect ratio and prevent distortion */
+                width: 100vw;
+                height: 100vh;
+                object-fit: cover;
                 top: 0;
                 left: 0;
-                transform: none; /* Remove the centering transform for small screens */
+                transform: none;
             }
             .navbar {
                 padding: 15px 20px;
@@ -155,39 +152,37 @@
         }
     </style>
 </head>
-    <body>
+<body>
+    <!-- Background Video -->
+    <video autoplay muted loop preload="auto" class="bg-video">
+        <source src="{% static 'images/solvingTogatherFriends.mp4' %}" type="video/mp4">
+        Your browser does not support HTML5 video.
+    </video>
 
-        <!-- Background Video -->
-        <video autoplay muted loop preload="auto" class="bg-video">
-            <source src="{% static 'images/solvingTogatherFriends.mp4' %}" type="video/mp4">
-            Your browser does not support HTML5 video.
-        </video>
+    <!-- Overlay -->
+    <div class="overlay"></div>
 
-        <!-- Overlay -->
-        <div class="overlay"></div>
+    <!-- Main Content -->
+    <div class="container">
+        <h1>Welcome To Puzzle Room</h1>
+        <p>Experience the ultimate puzzle-solving adventure with your friends!</p>
 
-        <!-- Main Content -->
-        <div class="container">
-            <h1>Welcome To Puzzle Room</h1>
-            <p>Experience the ultimate puzzle-solving adventure with your friends!</p>
+        <!-- Buttons -->
+        <a href="{% url 'user:auth_page' %}">
+            <button class="signin-signup-btn">Sign In or Register</button>
+        </a>
+        <form method="POST" action="{% url 'user:auth_page' %}" style="display: inline;">
+            {% csrf_token %}
+            <input type="hidden" name="form_type" value="guest_login">
+            <button class="signin-signup-btn" type="submit">Continue as Guest</button>
+        </form>
 
-            <!-- Buttons -->
-            <a href="{% url 'auth_page' %}">
-                <button class="signin-signup-btn">Sign In or Register</button>
-            </a>
-            <form method="POST" action="{% url 'auth_page' %}" style="display: inline;">
-                {% csrf_token %}
-                <input type="hidden" name="form_type" value="guest_login">
-                <button class="signin-signup-btn" type="submit">Continue as Guest</button>
-            </form>
-
-            <!-- Social Icons -->
-            <div class="social-icons">
-                <a href="#"><i class="fab fa-facebook-f"></i></a>
-                <a href="#"><i class="fab fa-twitter"></i></a>
-                <a href="#"><i class="fab fa-instagram"></i></a>
-            </div>
+        <!-- Social Icons -->
+        <div class="social-icons">
+            <a href="#"><i class="fab fa-facebook-f"></i></a>
+            <a href="#"><i class="fab fa-twitter"></i></a>
+            <a href="#"><i class="fab fa-instagram"></i></a>
         </div>
-
-    </body>
+    </div>
+</body>
 </html>

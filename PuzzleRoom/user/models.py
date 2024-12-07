@@ -2,7 +2,8 @@
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
 from django.db import models
 from django.utils import timezone
-# Removed: from rooms.models import PuzzleRoom
+from django.db import models
+from django.conf import settings  # Use this to reference your custom User model
 
 class UserManager(BaseUserManager):
     def create_user(self, email, username, password=None, is_guest=False, **extra_fields):
@@ -18,15 +19,22 @@ class UserManager(BaseUserManager):
         user.save(using=self._db)
         return user
 
-    def create_superuser(self, email, username, password=None, **extra_fields):
+    def create_superuser(self, username, email=None, password=None, **extra_fields):
+        """
+        Create and return a superuser with the given username, email, and password.
+        """
         extra_fields.setdefault('is_staff', True)
         extra_fields.setdefault('is_superuser', True)
-        if extra_fields.get('is_staff') is not True:
-            raise ValueError('Superuser must have is_staff=True.')
-        if extra_fields.get('is_superuser') is not True:
-            raise ValueError('Superuser must have is_superuser=True.')
 
-        return self.create_user(email, username, password, **extra_fields)
+        if not username:
+            raise ValueError("The Username field must be set")
+        if extra_fields.get('is_staff') is not True:
+            raise ValueError("Superuser must have is_staff=True.")
+        if extra_fields.get('is_superuser') is not True:
+            raise ValueError("Superuser must have is_superuser=True.")
+
+        return self.create_user(email=email, username=username, password=password, **extra_fields)
+
 
 class User(AbstractBaseUser, PermissionsMixin):
     email = models.EmailField(unique=True, null=True, blank=True)
@@ -47,3 +55,10 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     def __str__(self):
         return self.username if self.is_guest else self.email
+    
+class Profile(models.Model):
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    avatar = models.ImageField(upload_to='avatars/', blank=True, null=True)
+
+    def __str__(self):
+        return f"{self.user.username}'s Profile"

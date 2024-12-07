@@ -47,7 +47,7 @@ INSTALLED_APPS = [
     # OAuth providers
     'allauth.socialaccount.providers.github',
     'allauth.socialaccount.providers.google',
-    # Removed duplicate 'django.contrib.messages',
+
     # Other apps
     'oauth2_provider',
     'corsheaders',
@@ -113,7 +113,7 @@ WSGI_APPLICATION = 'PuzzleRoom.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'PuzzleRoom',
+        'NAME': 'puzzleRoom01',
         'USER': 'postgres',
         'PASSWORD': 'pass',
         'HOST': '127.0.0.1',
@@ -268,5 +268,12 @@ EMAIL_USE_TLS = True
 EMAIL_HOST_USER = 'apikey'  # Always use "apikey" as the user
 EMAIL_HOST_PASSWORD = SENDGRID_API_KEY  # Use the SendGrid API key as the password
 
-print("SendGrid API Key:", SENDGRID_API_KEY)
-print("Email Backend:", DEFAULT_FROM_EMAIL)
+
+LANGUAGES = [
+    ('en', 'English'),
+]
+
+LOGIN_URL = '/user/auth/'
+
+USE_I18N = True
+USE_L10N = True

@@ -1,195 +1,228 @@
 {% load static %}
 {% load socialaccount %}
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>User Settings</title>
-    <link rel="stylesheet" href="{% static 'user/css/settings.css' %}">
+    <title>Puzzle Room - User Settings</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
     <style>
-        /* Basic Styling */
+        :root {
+            --primary-color: #00ff00;
+            --secondary-color: #ff00ff;
+            --background-color: #111;
+            --text-color: #fff;
+            --input-background: rgba(255, 255, 255, 0.1);
+            --input-border: #444;
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: var(--text-color);
+            min-height: 100vh;
+            margin: 0;
+            padding: 0;
+            line-height: 1.6;
+        }
+
         .container {
-            padding: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
         }
 
-        .settings-link {
-            display: block;
-            margin: 10px 0;
-            color: #3498db;
-            text-decoration: none;
-            font-size: 1.2rem;
+        h1, h2, h3 {
+            font-family: 'Orbitron', sans-serif;
+            color: var(--primary-color);
+            text-shadow: 0 0 10px var(--primary-color);
         }
 
-        .settings-link:hover {
-            color: #2980b9;
+        main {
+            background-color: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            padding: 2rem;
+            margin-top: 70px;
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.3);
         }
 
-        .form-container {
-            display: none; /* Hide all forms initially */
-            margin-top: 20px;
+        .settings-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
         }
 
-        .active {
-            display: block; /* Only display the active form */
+        .settings-section {
+            background-color: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+            padding: 1.5rem;
+            box-shadow: 0 0 15px rgba(255, 0, 255, 0.2);
         }
 
-        .settings-options {
-            margin-bottom: 30px;
-        }
-
-        .form-container h2 {
-            margin-bottom: 20px;
-        }
-
-        .form-container form {
+        .settings-form {
             display: flex;
             flex-direction: column;
         }
 
-        .form-container button {
-            background-color: #3498db;
-            color: white;
-            padding: 10px;
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: var(--secondary-color);
+        }
+
+        input, .btn {
+            width: 100%;
+            padding: 0.75rem;
+            background-color: var(--input-background);
+            border: 1px solid var(--input-border);
+            border-radius: 4px;
+            color: var(--text-color);
+            font-size: 1rem;
+            transition: box-shadow 0.3s ease;
+        }
+
+        input:focus {
+            outline: none;
+            box-shadow: 0 0 10px var(--primary-color);
+        }
+
+        .btn {
+            background-color: var(--primary-color);
+            color: var(--background-color);
             border: none;
-            border-radius: 5px;
             cursor: pointer;
-            margin-top: 10px;
+            transition: background-color 0.3s ease, box-shadow 0.3s ease;
+            font-family: 'Orbitron', sans-serif;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-top: 1rem;
         }
 
-        .form-container button:hover {
-            background-color: #2980b9;
+        .btn:hover {
+            background-color: var(--secondary-color);
+            box-shadow: 0 0 15px var(--secondary-color);
         }
 
-        /* Error Message Styling */
-        .alert {
-            color: red;
-            background-color: #f8d7da;
-            padding: 10px;
-            border-radius: 5px;
-            margin-bottom: 15px;
+        .btn-secondary {
+            background-color: transparent;
+            border: 1px solid var(--primary-color);
+            color: var(--primary-color);
         }
 
+        .btn-secondary:hover {
+            background-color: var(--primary-color);
+            color: var(--background-color);
+        }
+
+        .password-warning {
+            color: #ff3860;
+            font-weight: bold;
+            margin-left: 5px;
+            cursor: help;
+        }
+
+        .password-tooltip {
+            position: absolute;
+            background-color: rgba(255, 255, 255, 0.9);
+            color: var(--background-color);
+            padding: 0.5rem;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            width: 250px;
+            z-index: 1;
+            box-shadow: 0 0 10px rgba(255, 0, 255, 0.5);
+            display: none;
+        }
+
+        @media (max-width: 768px) {
+            .settings-grid {
+                grid-template-columns: 1fr;
+            }
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        <h2>User Settings</h2>
-
-        <!-- Links for changing settings -->
-        <div class="settings-options" id="settings-options">
-            <div class="setting-item">
-                <h3>Profile Settings</h3>
-                <a href="#" id="change-username" class="settings-link">Change Username</a>
-                <a href="#" id="change-email" class="settings-link">Change Email</a>
-                <a href="#" id="change-password" class="settings-link">Change Password</a>
-            </div>
-        </div>
-
-        <!-- Change Username Form -->
-        <div id="username-form" class="form-container">
-            <h2>Change Username</h2>
-            <form method="post">
-                {% csrf_token %}
-                {{ change_username_form.as_p }}
-                <button type="submit">Update Username</button>
-            </form>
-            <a href="#" class="settings-link" id="back-to-settings-username">Back to Settings</a>
-        </div>
-
-        <!-- Change Email Form -->
-        <div id="email-form" class="form-container">
-            <h2>Change Email</h2>
-            <!-- Display form errors if any -->
-            {% if change_email_form.errors %}
-                <div class="alert">
-                    <ul>
-                        {% for field in change_email_form %}
-                            {% for error in field.errors %}
-                                <li>{{ error }}</li>
-                            {% endfor %}
-                        {% endfor %}
-                    </ul>
+        <header>
+            {% include 'navbar/navbar.html' %}
+        </header>
+    
+        <main>
+            <h1>User Settings</h1>
+            <div class="settings-grid">
+                <div class="settings-section">
+                    <h2>Account</h2>
+                    <form method="post" action="{% url 'user:change_username' %}" class="settings-form">
+                        {% csrf_token %}
+                        <div class="form-group">
+                            <label for="username">Username</label>
+                            {{ change_username_form.username }}
+                        </div>
+                        <button type="submit" class="btn">Update Username</button>
+                    </form>
                 </div>
-            {% endif %}
-            <form method="post">
-                {% csrf_token %}
-                {{ change_email_form.as_p }}
-                <button type="submit">Update Email</button>
-            </form>
-            <a href="#" class="settings-link" id="back-to-settings-email">Back to Settings</a>
-        </div>
-
-        <!-- Change Password Form -->
-        <div id="password-form" class="form-container">
-            <h2>Change Password</h2>
-            <form method="post">
-                {% csrf_token %}
-                {{ change_password_form.as_p }}
-                <button type="submit">Change Password</button>
-            </form>
-            <a href="#" class="settings-link" id="back-to-settings-password">Back to Settings</a>
-        </div>
+                <div class="settings-section">
+                    <h2>Email</h2>
+                    <form method="post" action="{% url 'user:change_email' %}" class="settings-form">
+                        {% csrf_token %}
+                        <div class="form-group">
+                            <label for="email">Email</label>
+                            {{ change_email_form.email }}
+                        </div>
+                        <button type="submit" class="btn">Update Email</button>
+                    </form>
+                    <form method="post" action="{% url 'user:resend_verification_email' %}" class="settings-form">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-secondary">Resend Verification Email</button>
+                    </form>
+                </div>
+                <div class="settings-section">
+                    <h2>Password</h2>
+                    <form method="post" action="{% url 'user:change_password' %}" class="settings-form">
+                        {% csrf_token %}
+                        <div class="form-group">
+                            <label for="old_password">Current Password</label>
+                            {{ change_password_form.old_password }}
+                        </div>
+                        <div class="form-group">
+                            <label for="new_password1">New Password <span class="password-warning">!</span></label>
+                            <input type="password" id="new_password1" name="new_password1" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="new_password2">Confirm New Password <span class="password-warning">!</span></label>
+                            <input type="password" id="new_password2" name="new_password2" required>
+                        </div>
+                        <button type="submit" class="btn">Change Password</button>
+                    </form>
+                </div>
+            </div>
+        </main>
     </div>
 
     <script>
-        // Show the appropriate form based on the link clicked
-        document.getElementById('change-username').addEventListener('click', function(e) {
-            e.preventDefault();
-            toggleForm('username-form');
-        });
+        document.addEventListener('DOMContentLoaded', function() {
+            const passwordWarnings = document.querySelectorAll('.password-warning');
+            
+            passwordWarnings.forEach(warning => {
+                const tooltip = document.createElement('div');
+                tooltip.className = 'password-tooltip';
+                tooltip.textContent = 'Password must be at least 8 characters long and include uppercase, lowercase, numbers, and special characters.';
+                warning.appendChild(tooltip);
 
-        document.getElementById('change-email').addEventListener('click', function(e) {
-            e.preventDefault();
-            toggleForm('email-form');
-        });
+                warning.addEventListener('mouseover', function() {
+                    tooltip.style.display = 'block';
+                });
 
-        document.getElementById('change-password').addEventListener('click', function(e) {
-            e.preventDefault();
-            toggleForm('password-form');
-        });
-
-        // Toggle function to show and hide forms
-        function toggleForm(formId) {
-            // Hide all forms
-            document.querySelectorAll('.form-container').forEach(function(form) {
-                form.style.display = 'none';  // Hide the form
+                warning.addEventListener('mouseout', function() {
+                    tooltip.style.display = 'none';
+                });
             });
-
-            // Hide settings options (links)
-            document.getElementById('settings-options').style.display = 'none';
-
-            // Show the selected form
-            document.getElementById(formId).style.display = 'block';  // Show the selected form
-        }
-
-        // Back to settings links to show the original options
-        document.getElementById('back-to-settings-username').addEventListener('click', function(e) {
-            e.preventDefault();
-            backToSettings();
         });
-
-        document.getElementById('back-to-settings-email').addEventListener('click', function(e) {
-            e.preventDefault();
-            backToSettings();
-        });
-
-        document.getElementById('back-to-settings-password').addEventListener('click', function(e) {
-            e.preventDefault();
-            backToSettings();
-        });
-
-        // Function to go back to the settings options (links)
-        function backToSettings() {
-            // Show settings options (links)
-            document.getElementById('settings-options').style.display = 'block';
-
-            // Hide all forms
-            document.querySelectorAll('.form-container').forEach(function(form) {
-                form.style.display = 'none';
-            });
-        }
     </script>
 </body>
 </html>

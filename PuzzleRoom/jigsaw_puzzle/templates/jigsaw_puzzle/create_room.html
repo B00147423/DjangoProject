@@ -1,132 +1,219 @@
+{% load static %}
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Create Puzzle Room</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Collaborative Puzzle Room: {{ room.name }}</title>
+    <script src="https://unpkg.com/konva@8.4.2/konva.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <style>
+        .piece {
+            background-size: cover;
+            background-position: center;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            width: 80px;
+            height: 80px;
+        }
+        .piece.disabled {
+            opacity: 0.5;
+            pointer-events: none;
+        }
+        .piece.selected {
+            border: 2px solid #3B82F6;
+        }
+    </style>
 </head>
-<body>
-    <h1>Create a New Puzzle Room</h1>
-    <form method="post" enctype="multipart/form-data">
-        {% csrf_token %}
-        
-        <!-- Room name -->
-        <label for="id_name">Room Name:</label>
-        <input type="text" name="name" id="id_name" required><br>
+<body class="bg-gradient-to-b from-blue-50 to-blue-100 min-h-screen">
+    <div class="container mx-auto px-4 py-8">
+        <header class="bg-white rounded-lg shadow-md p-6 mb-8">
+            <h1 class="text-3xl font-bold text-center text-blue-600">Collaborative Puzzle Room: {{ room.name }}</h1>
+            <p class="text-center text-gray-600 mt-2">Work together to solve the puzzle!</p>
+        </header>
+        <div class="flex flex-col md:flex-row gap-8">
+            <!-- Pieces Container -->
+            <div id="pieces-container" class="bg-white rounded-lg shadow-md p-4 md:w-1/4">
+                <h2 class="text-xl font-semibold mb-4">Puzzle Pieces</h2>
+                <div class="grid grid-cols-3 gap-2" id="pieces-grid"></div>
+            </div>
+            <!-- Puzzle Grid Container -->
+            <div id="grid-container" class="bg-white rounded-lg shadow-md p-4 flex-grow"></div>
+        </div>
+    </div>
+    <!-- Pass puzzle data -->
+    <script id="puzzle-data" type="application/json">
+        {{ pieces_data|safe }}
+    </script>
 
-        <!-- Puzzle image -->
-        <label for="id_puzzle_image">Puzzle Image:</label>
-        <input type="file" name="puzzle_image" id="id_puzzle_image" required><br>
 
-        <!-- Difficulty selection -->
-        <label for="id_difficulty">Difficulty:</label>
-        <select name="difficulty" id="id_difficulty" required>
-            <option value="easy">Easy</option>
-            <option value="medium">Medium</option>
-            <option value="hard">Hard</option>
-        </select><br>
 
-        <!-- Mode selection -->
-        <label for="id_mode">Mode:</label>
-        <select name="mode" id="id_mode" required>
-            <option value="versus">Versus (1v1)</option>
-            <option value="collaborative">Collaborative</option>
-        </select><br>
+    <script>
+    const roomId = '{{ room.id }}';
+    const piecesData = JSON.parse(document.getElementById('puzzle-data').textContent);
+    const gridSizes = { easy: 4, medium: 6, hard: 8 };
+    const gridRows = gridSizes['{{ room.difficulty }}'];
+    const gridCols = gridSizes['{{ room.difficulty }}'];
+    const baseGridSize = 80; // Size of each grid cell
+    const playerRole = '{{ player_role }}';
+    const stage = new Konva.Stage({
+        container: 'grid-container',
+        width: baseGridSize * gridCols,
+        height: baseGridSize * gridRows,
+    });
+    const layer = new Konva.Layer();
+    stage.add(layer);
+    let selectedPiece = null;
 
-        <button type="submit">Create Room</button>
-    </form>
-</body>
-
-<script>
-    const piecesData = JSON.parse("{{ pieces_data|escapejs }}");
-    const playerRole = "{{ player_role }}";
-    const roomId = "{{ room.id }}";
-    const socket = new WebSocket(`ws://${window.location.host}/ws/puzzle/${roomId}/`);
-
-    // Variables to keep track of dragging state
-    let draggedPiece = null;
-    let offsetX = 0;
-    let offsetY = 0;
-
-    // Render puzzle pieces on the board
-    function renderPuzzlePieces() {
-        const container = document.getElementById("puzzle-container");
-        piecesData.forEach(piece => {
-            const pieceElement = document.createElement("div");
-            pieceElement.classList.add("piece");
-            pieceElement.style.backgroundImage = `url(${piece.image_url})`;
-            pieceElement.style.left = piece.x + "px";
-            pieceElement.style.top = piece.y + "px";
-            pieceElement.dataset.pieceId = piece.id;
-
-            // Add event listeners for drag-and-drop
-            pieceElement.addEventListener("mousedown", onMouseDown);
-
-            container.appendChild(pieceElement);
+    function createGrid() {
+        for (let i = 0; i < gridCols; i++) {
+            for (let j = 0; j < gridRows; j++) {
+                const square = new Konva.Rect({
+                    x: i * baseGridSize,
+                    y: j * baseGridSize,
+                    width: baseGridSize,
+                    height: baseGridSize,
+                    stroke: 'gray',
+                    strokeWidth: 1,
+                });
+                square.on('click', () => {
+                    if (selectedPiece) {
+                        placePiece(square, i, j);
+                    }
+                });
+                layer.add(square);
+            }
+        }
+        layer.draw();
+    }
+    function loadInitialPieces(pieces) {
+        pieces.forEach(piece => {
+            if (piece.is_placed) {
+                // Place piece on the grid
+                placePieceOnGrid(piece.id, piece.x, piece.y);
+            } else {
+                // Add piece back to the container
+                const pieceElement = document.createElement('div');
+                pieceElement.classList.add('piece');
+                pieceElement.dataset.pieceId = piece.id;
+                pieceElement.style.backgroundImage = `url('${piece.image_url}')`;
+                document.getElementById('pieces-grid').appendChild(pieceElement);
+            }
         });
     }
 
-    function onMouseDown(e) {
-        const pieceId = e.target.dataset.pieceId;
-        socket.send(JSON.stringify({
-            type: 'lock_piece',
-            piece_id: pieceId,
-            player_role: playerRole,
-        }));
+        function placePiece(square, layer) {
+            if (selectedPiece) {
+                const pieceId = selectedPiece.dataset.pieceId;
+                const newX = square.x();
+                const newY = square.y();
 
-        // Proceed with dragging only if the piece is not locked by another player
-        draggedPiece = e.target;
-        offsetX = e.clientX - draggedPiece.offsetLeft;
-        offsetY = e.clientY - draggedPiece.offsetTop;
+                // Update piece on the server
+                sendMove(pieceId, newX, newY);
 
-        document.addEventListener("mousemove", onMouseMove);
-        document.addEventListener("mouseup", onMouseUp);
-    }
+                // Update piece on the grid
+                placePieceOnGrid(pieceId, newX, newY);
 
-    function onMouseMove(e) {
-        if (!draggedPiece) return;
-
-        // Calculate new position
-        const newX = e.clientX - offsetX;
-        const newY = e.clientY - offsetY;
-
-        // Update piece position
-        draggedPiece.style.left = `${newX}px`;
-        draggedPiece.style.top = `${newY}px`;
-    }
-
-    function onMouseUp(e) {
-        const container = document.getElementById("puzzle-container");
-        const gridSize = container.offsetWidth / gridSize; // Adjust dynamically
-
-        const snappedX = Math.round(draggedPiece.offsetLeft / gridSize) * gridSize;
-        const snappedY = Math.round(draggedPiece.offsetTop / gridSize) * gridSize;
-
-        draggedPiece.style.left = `${snappedX}px`;
-        draggedPiece.style.top = `${snappedY}px`;
-
-        socket.send(JSON.stringify({
-            type: 'piece_move',
-            piece_id: draggedPiece.dataset.pieceId,
-            new_x: snappedX,
-            new_y: snappedY,
-        }));
-
-        draggedPiece = null;
-        document.removeEventListener("mousemove", onMouseMove);
-        document.removeEventListener("mouseup", onMouseUp);
-    }
-    // WebSocket message handling
-    socket.onmessage = function(event) {
-        const data = JSON.parse(event.data);
-        if (data.type === 'piece_move') {
-            const pieceElement = document.querySelector(`[data-piece-id="${data.piece_id}"]`);
-            if (pieceElement) {
-                pieceElement.style.left = `${data.new_x}px`;
-                pieceElement.style.top = `${data.new_y}px`;
+                selectedPiece.classList.add('disabled');
+                selectedPiece.classList.remove('selected');
+                selectedPiece = null;
             }
         }
-    };
 
-    renderPuzzlePieces();
+
+    function sendMove(pieceId, newX, newY) {
+        if (!socket || socket.readyState !== WebSocket.OPEN) {
+            console.error('WebSocket not connected!');
+            return;
+        }
+        socket.send(JSON.stringify({
+            'type': 'piece_move',
+            'piece_id': pieceId,
+            'new_x': newX,
+            'new_y': newY,
+            'player_role': playerRole
+        }));
+    }
+
+    function placePiece(square, i, j) {
+        if (selectedPiece) {
+            const pieceId = selectedPiece.dataset.pieceId;
+            const newX = square.x();
+            const newY = square.y();
+
+            // Update piece on the server
+            sendMove(pieceId, newX, newY);
+
+            // Update piece on the grid
+            placePieceOnGrid(pieceId, newX, newY);
+
+            selectedPiece.classList.add('disabled');
+            selectedPiece.classList.remove('selected');
+            selectedPiece = null;
+        }
+    }
+
+    function removePieceFromGrid(pieceId) {
+            const pieceElement = document.querySelector(`[data-piece-id="${pieceId}"]`);
+            if (pieceElement) {
+                // Reset piece to the container
+                pieceElement.classList.remove('disabled');
+                pieceElement.style.left = '';
+                pieceElement.style.top = '';
+                document.getElementById('pieces-grid').appendChild(pieceElement);
+            }
+
+            // Update the server
+            fetch(`/jigsaw/remove_piece/${pieceId}/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrfToken,
+                },
+            }).then(response => response.json()).then(data => {
+                if (data.status === 'success') {
+                    console.log('Piece removed successfully');
+                }
+            });
+        }
+
+
+// Bind right-click to remove pieces
+document.addEventListener('contextmenu', (e) => {
+    e.preventDefault();
+    const pieceElement = e.target.closest('.piece');
+    if (pieceElement) {
+        const pieceId = pieceElement.dataset.pieceId;
+        removePieceFromGrid(pieceId);
+    }
+});
+
+    document.addEventListener('contextmenu', (e) => {
+        e.preventDefault();
+        const pieceElement = e.target.closest('.piece');
+        if (pieceElement) {
+            const pieceId = pieceElement.dataset.pieceId;
+            removePieceFromGrid(pieceId);
+        }
+    });
+
+    const socket = new WebSocket(`ws://${window.location.host}/ws/puzzle/${roomId}/`);
+
+socket.onmessage = function (event) {
+    const data = JSON.parse(event.data);
+    if (data.type === 'piece_move') {
+        placePieceOnGrid(data.piece_id, data.new_x, data.new_y);
+    } else if (data.type === 'piece_remove') {
+        removePieceFromGrid(data.piece_id);
+    }
+};
+
+    document.addEventListener('DOMContentLoaded', () => {
+        createGrid();
+        loadInitialPieces(piecesData);
+    });
 </script>
 
+
+</body>
 </html>

@@ -2,14 +2,12 @@
 from django import forms
 from django.contrib.auth import get_user_model
 from django.contrib.auth.forms import PasswordChangeForm
-
+from .models import Profile
 User = get_user_model()
 
-# Form for changing the user's password
 class CustomPasswordChangeForm(PasswordChangeForm):
-    pass  # Inherits Django's default password change validation
+    pass  
 
-# Form for changing the user's email
 class ChangeEmailForm(forms.ModelForm):
     class Meta:
         model = User
@@ -21,7 +19,6 @@ class ChangeEmailForm(forms.ModelForm):
             raise forms.ValidationError("This email is already in use.")
         return email
 
-# Form for changing the user's username
 class ChangeUsernameForm(forms.ModelForm):
     class Meta:
         model = User
@@ -32,3 +29,8 @@ class ChangeUsernameForm(forms.ModelForm):
         if User.objects.exclude(pk=self.instance.pk).filter(username=username).exists():
             raise forms.ValidationError("This username is already taken.")
         return username
+    
+class ProfileForm(forms.ModelForm):
+    class Meta:
+        model = Profile
+        fields = ['avatar']

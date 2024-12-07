@@ -1,15 +1,10 @@
-import aioredis
-import asyncio
+import redis
 
-async def test_redis():
-    redis = await aioredis.create_redis_pool("redis://localhost:6379")
+def test_redis():
     try:
-        # Test BZPOPMIN to see if it's recognized
-        await redis.bzpopmin("test_key", timeout=1)
+        redis_client = redis.StrictRedis(host='localhost', port=6379, db=0)
+        response = redis_client.ping()
+        assert response is True
+        print("Redis connection successful.")
     except Exception as e:
-        print("Error:", e)
-    finally:
-        redis.close()
-        await redis.wait_closed()
-
-asyncio.run(test_redis())
+        print(f"Redis connection failed: {e}")

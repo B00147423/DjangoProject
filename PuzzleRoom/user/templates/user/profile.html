@@ -1,0 +1,11 @@
+{% load static %}  <!-- Add this line at the top of your template -->
+{% if user.profile.avatar %}
+    <img src="{{ user.profile.avatar.url }}" alt="{{ user.username }}'s avatar" />
+{% else %}
+    <img src="{% static 'path/to/default/avatar.png' %}" alt="Default avatar" />
+{% endif %}
+<form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    {{ profile_form.as_p }}
+    <button type="submit">Update Profile</button>
+</form>
