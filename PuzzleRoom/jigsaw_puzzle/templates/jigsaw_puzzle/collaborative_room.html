@@ -5,401 +5,64 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Collaborative Puzzle Room: {{ room.name }}</title>
+
+    <!-- External Libraries -->
     <script src="https://unpkg.com/konva@8.4.2/konva.min.js"></script>
-    
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
 
-    <!-- Font Awesome Icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    
     <!-- Styles -->
-    <style>
-        *, *::before, *::after {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
+    <link rel="stylesheet" href="{% static 'jigsaw_puzzle/css/collaborative_room.css' %}">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 
-        body, html {
-            height: 100%;
-            font-family: 'Poppins', sans-serif;
-            color: #fff;
-            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
-        }
-
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 2rem;
-        }
-
-        .piece {
-            background-size: cover;
-            background-position: center;
-            border: 1px solid #4a5568;
-            border-radius: 4px;
-            width: 40px;
-            height: 40px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-        .piece:hover {
-            transform: scale(1.1);
-            box-shadow: 0px 0px 15px rgba(66, 153, 225, 0.6);
-        }
-        .piece.disabled {
-            opacity: 0.5;
-            pointer-events: none;
-        }
-        .piece.selected {
-            border: 2px solid #4299e1;
-            box-shadow: 0px 0px 20px rgba(66, 153, 225, 0.8);
-        }
-        #grid-container {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            background-color: rgba(255, 255, 255, 0.1);
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            padding: 1rem;
-            border-radius: 10px;
-        }
-        #pieces-container {
-            display: flex;
-            flex-direction: column;
-            max-height: 40vh;
-            overflow-y: auto;
-            align-items: center;
-            background-color: rgba(255, 255, 255, 0.1);
-            border-radius: 10px;
-            padding: 1rem;
-        }
-        .flex-container {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 2rem;
-            min-height: 80vh;
-        }
-
-        /* Participants Section */
-        .participants {
-            position: absolute;
-            top: 1rem;
-            right: 1rem;
-            background-color: rgba(32, 39, 55, 0.9); /* Subtle background for contrast */
-            border-radius: 10px;
-            padding: 1rem;
-            width: 200px; /* Fixed width */
-            text-align: center; /* Center the content */
-            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2); /* Slight shadow for depth */
-        }
-
-        .participants h2 {
-            font-size: 1.2rem;
-            color: #4fc3f7;
-            margin-bottom: 1rem;
-            text-align: center;
-        }
-
-        .participants ul {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-            text-align: left;
-        }
-
-        .participants li {
-            display: flex;
-            align-items: center;
-            margin-bottom: 1rem;
-        }
-
-        .participants li:last-child {
-            margin-bottom: 0;
-        }
-
-        .participants img, .avatar {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            object-fit: cover;
-            margin-right: 0.5rem;
-            border: 2px solid #4fc3f7;
-        }
-
-        .participants span {
-            font-size: 1rem;
-            color: #e0e0e0;
-            font-weight: bold;
-        }
-
-        .avatar {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            background-color: #546e7a;
-            color: #fff;
-            font-size: 0.9rem;
-            font-weight: bold;
-        }
-
-        /* Responsive Adjustments */
-        @media (max-width: 768px) {
-            .participants {
-                width: 150px;
-                top: 0.5rem;
-                right: 0.5rem;
-            }
-
-            .participants img, .avatar {
-                width: 35px;
-                height: 35px;
-            }
-
-            .participants span {
-                font-size: 0.9rem;
-            }
-        }
-    </style>
+    <!-- JavaScript Linking -->
+    <script src="{% static 'jigsaw_puzzle/js/collaborative_room.js' %}" defer></script>
 </head>
+
+<body>
 <header>
     <h1 class="text-3xl font-bold text-center">Collaborative Puzzle Room: {{ room.name }}</h1>
     <p class="text-center mt-2">Work together to solve the puzzle!</p>
 </header>
-<body>
-    <div class="container">
-        <!-- Participants Section -->
-        <div class="participants">
-            <h2>Participants</h2>
-            <ul>
-                {% for participant in participants %}
-                    {% if participant %}
-                        <li>
-                            {% if participant.profile.avatar %}
-                                <img src="{{ participant.profile.avatar.url }}" alt="{{ participant.username }}">
-                            {% else %}
-                                <div class="avatar">{{ participant.username|slice:":1" }}</div>
-                            {% endif %}
-                            <span>{{ participant.username }}</span>
-                        </li>
-                    {% endif %}
-                {% endfor %}
-            </ul>
-        </div>
 
-        <!-- Game Area -->
-        <div class="flex-container">
-            <!-- Puzzle Pieces -->
-            <div id="pieces-container" class="md:w-1/4">
-                <h2 class="text-xl font-semibold mb-4 text-center">Puzzle Pieces</h2>
-                <div class="grid grid-cols-6 gap-2" id="pieces-grid"></div>
-            </div>
-            <!-- Puzzle Grid -->
-            <div id="grid-container" class="flex-grow"></div>
-        </div>
+<div class="container">
+    <!-- Participants Section -->
+    <div class="participants">
+        <h2>Participants</h2>
+        <ul>
+            {% for participant in participants %}
+            <li>
+                {% if participant.profile.avatar %}
+                    <img src="{{ participant.profile.avatar.url }}" alt="{{ participant.username }}">
+                {% else %}
+                    <div class="avatar">{{ participant.username|slice:":1" }}</div>
+                {% endif %}
+                <span>{{ participant.username }}</span>
+            </li>
+            {% endfor %}
+        </ul>
     </div>
+
+    <!-- Game Area -->
+    <div class="flex-container">
+        <div id="pieces-container" class="md:w-1/4">
+            <h2 class="text-xl font-semibold mb-4 text-center">Puzzle Pieces</h2>
+            <div class="grid grid-cols-6 gap-2" id="pieces-grid"></div>
+        </div>
+        <div id="grid-container" class="flex-grow"></div>
+    </div>
+</div>
+
+<!-- Pass Puzzle Data -->
+<script id="puzzle-data" type="application/json">
+    {{ pieces_data|safe }}
+</script>
+<script id="room-data" type="application/json">
+    {
+        "room_id": "{{ room.id }}",
+        "player_role": "{{ player_role }}",
+        "difficulty": "{{ room.difficulty }}"
+    }
+</script>
+
 </body>
 </html>
-
-
-
-    <!-- Pass puzzle data -->
-    <script id="puzzle-data" type="application/json">
-        {{ pieces_data|safe }}
-    </script>
-
-    <script>
-        const roomId = '{{ room.id }}';
-        const playerRole = '{{ player_role }}';
-        const piecesData = JSON.parse(document.getElementById('puzzle-data').textContent);
-        const gridSizes = { easy: 4, medium: 6, hard: 8 };
-        const gridRows = gridSizes['{{ room.difficulty }}'];
-        const gridCols = gridSizes['{{ room.difficulty }}'];
-        const baseGridSize = 80;
-        const stage = new Konva.Stage({
-            container: 'grid-container',
-            width: baseGridSize * gridCols,
-            height: baseGridSize * gridRows,
-        });
-        const layer = new Konva.Layer();
-        stage.add(layer);
-
-        const socket = new WebSocket(`ws://${window.location.host}/ws/puzzle/${roomId}/`);
-        let selectedPiece = null;
-        let placedPieces = {};
-
-        // Create a mapping of piece IDs to image URLs
-        const pieceImages = {};
-        piecesData.forEach(piece => {
-            pieceImages[piece.id] = piece.image_url;
-        });
-
-        function createGrid() {
-            for (let i = 0; i < gridCols; i++) {
-                for (let j = 0; j < gridRows; j++) {
-                    const square = new Konva.Rect({
-                        x: i * baseGridSize,
-                        y: j * baseGridSize,
-                        width: baseGridSize,
-                        height: baseGridSize,
-                        stroke: 'gray',
-                        strokeWidth: 1,
-                    });
-                    square.on('click', () => {
-                        if (selectedPiece) placePiece(square, i, j);
-                    });
-                    layer.add(square);
-                }
-            }
-            layer.draw();
-        }
-
-        function loadPuzzlePieces(pieces) {
-            const piecesGrid = document.getElementById('pieces-grid');
-
-            pieces.forEach(piece => {
-                if (piece.is_placed) {
-                    // Place on the grid if already placed
-                    placePieceOnGrid(piece.id, piece.x, piece.y, piece.image_url);
-                } else {
-                    // Otherwise, add to the pieces list
-                    const pieceElement = document.createElement('div');
-                    pieceElement.classList.add('piece');
-                    pieceElement.dataset.pieceId = piece.id;
-                    pieceElement.style.backgroundImage = `url('${piece.image_url}')`;
-
-                    pieceElement.addEventListener('click', () => {
-                        if (selectedPiece) selectedPiece.classList.remove('selected');
-                        selectedPiece = pieceElement;
-                        pieceElement.classList.add('selected');
-                    });
-
-                    piecesGrid.appendChild(pieceElement);
-                }
-            });
-        }
-
-        function placePiece(square, gridX, gridY) {
-            if (selectedPiece) {
-                const pieceId = selectedPiece.dataset.pieceId;
-                const newX = gridX * baseGridSize;
-                const newY = gridY * baseGridSize;
-
-                placePieceOnGrid(pieceId, newX, newY);
-                sendMove(pieceId, newX, newY);
-
-                selectedPiece.classList.add('disabled');
-                selectedPiece.classList.remove('selected');
-                selectedPiece = null;
-            }
-        }
-
-        function placePieceOnGrid(pieceId, x, y, imageUrl) {
-            if (!imageUrl) {
-                imageUrl = pieceImages[pieceId];
-            }
-            const imageObj = new Image();
-            imageObj.src = imageUrl;
-            imageObj.onload = () => {
-                const imageNode = new Konva.Image({
-                    x: x,
-                    y: y,
-                    width: baseGridSize,
-                    height: baseGridSize,
-                    image: imageObj,
-                    id: 'piece-' + pieceId,
-                });
-
-                imageNode.on('contextmenu', (e) => {
-                    e.evt.preventDefault();
-                    removePiece(pieceId);
-                });
-
-                layer.add(imageNode);
-                layer.draw();
-            };
-        }
-
-        function removePiece(pieceId) {
-            // Remove piece from the grid and update UI immediately
-            removePieceFromGrid(pieceId);
-
-            // Send remove message to server
-            sendRemove(pieceId);
-        }
-
-        function sendMove(pieceId, newX, newY) {
-            socket.send(JSON.stringify({
-                type: "piece_move",
-                piece_id: pieceId,
-                new_x: newX,
-                new_y: newY,
-                player_role: playerRole,
-            }));
-        }
-
-        function sendRemove(pieceId) {
-            socket.send(JSON.stringify({
-                type: "piece_remove",
-                piece_id: pieceId,
-                player_role: playerRole,
-            }));
-        }
-
-        socket.onmessage = function (event) {
-            const data = JSON.parse(event.data);
-            console.log('Received message:', data);
-
-            if (data.type === "piece_move") {
-                placedPieces[data.piece_id] = { x: data.new_x, y: data.new_y };
-                placePieceOnGrid(data.piece_id, data.new_x, data.new_y, data.image_url);
-
-                // Disable the piece in the pieces list
-                const pieceElement = document.querySelector(`[data-piece-id="${data.piece_id}"]`);
-                if (pieceElement) pieceElement.classList.add('disabled');
-
-            } else if (data.type === "piece_remove") {
-                console.log('Received piece_remove for piece_id:', data.piece_id);
-                removePieceFromGrid(data.piece_id);
-            }
-        };
-
-        function removePieceFromGrid(pieceId) {
-            console.log('Attempting to remove piece from grid with ID:', pieceId);
-            const piece = layer.findOne('#piece-' + pieceId);
-            console.log('Found piece:', piece);
-            if (piece) {
-                piece.destroy();
-                layer.draw();
-            }
-            delete placedPieces[pieceId];
-
-            // Add piece back to the pieces list if not already there
-            const existingPieceElement = document.querySelector(`[data-piece-id="${pieceId}"]`);
-            if (!existingPieceElement) {
-                const piecesGrid = document.getElementById('pieces-grid');
-                const pieceElement = document.createElement('div');
-                pieceElement.classList.add('piece');
-                pieceElement.dataset.pieceId = pieceId;
-                pieceElement.style.backgroundImage = `url('${pieceImages[pieceId]}')`;
-
-                pieceElement.addEventListener('click', () => {
-                    if (selectedPiece) selectedPiece.classList.remove('selected');
-                    selectedPiece = pieceElement;
-                    pieceElement.classList.add('selected');
-                });
-
-                piecesGrid.appendChild(pieceElement);
-            } else {
-                // Enable the piece in the pieces list
-                existingPieceElement.classList.remove('disabled');
-            }
-        }
-
-        document.addEventListener("DOMContentLoaded", () => {
-            createGrid();
-            loadPuzzlePieces(piecesData);
-        });
-    </script>

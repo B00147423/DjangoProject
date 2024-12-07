@@ -30,6 +30,7 @@ import random
 import string
 import re
 from django.views.decorators.csrf import csrf_protect
+from django.core.exceptions import ObjectDoesNotExist
 @login_required
 @receiver(post_save, sender=settings.AUTH_USER_MODEL)
 def create_or_update_user_profile(sender, instance, created, **kwargs):
@@ -44,14 +45,20 @@ def create_or_update_user_profile(sender, instance, created, **kwargs):
 
 @login_required
 def profile_view(request):
+    try:
+        profile = request.user.profile
+    except ObjectDoesNotExist:
+        # Create profile if it doesn't exist
+        profile = Profile.objects.create(user=request.user)
+
     if request.method == 'POST':
-        profile_form = ProfileForm(request.POST, request.FILES, instance=request.user.profile)
+        profile_form = ProfileForm(request.POST, request.FILES, instance=profile)
         if profile_form.is_valid():
             profile_form.save()
             messages.success(request, 'Your profile has been updated.')
             return redirect(reverse('user:profile_view'))
     else:
-        profile_form = ProfileForm(instance=request.user.profile)
+        profile_form = ProfileForm(instance=profile)
 
     return render(request, 'user/profile.html', {'profile_form': profile_form})
 

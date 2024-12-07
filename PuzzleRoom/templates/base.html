@@ -2,187 +2,109 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <!-- Meta and Title -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Puzzle Room</title>
-
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
-
-    <!-- Font Awesome Icons -->
+    <title>Puzzle Room - Ultimate Puzzle Adventure</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-
-    <!-- Styles -->
-    <style>
-        /* Basic Reset */
-        *, *::before, *::after {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
-
-        body, html {
-            height: 100%;
-            font-family: 'Poppins', sans-serif;
-            color: #fff;
-        }
-
-        /* Flex Centering */
-        body {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            overflow: hidden;
-            position: relative;
-        }
-
-        /* Background Video Styles */
-        .bg-video {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            width: 100vw;
-            height: 100vh;
-            object-fit: cover;
-            transform: translate(-50%, -50%);
-            z-index: -2;
-        }
-
-        /* Overlay */
-        .overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.5);
-            z-index: -1;
-        }
-
-        /* Container */
-        .container {
-            text-align: center;
-            color: #fff;
-            animation: fadeInUp 1s ease-out;
-        }
-
-        .container h1 {
-            font-size: 3rem;
-            margin-bottom: 1rem;
-            font-weight: 600;
-            text-transform: uppercase;
-        }
-
-        .container p {
-            font-size: 1.2rem;
-            margin-bottom: 2rem;
-            font-weight: 300;
-        }
-
-        .signin-signup-btn {
-            padding: 15px 30px;
-            font-size: 1rem;
-            color: #fff;
-            background-color: transparent;
-            border: 2px solid #fff;
-            border-radius: 50px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            margin: 10px;
-            text-transform: uppercase;
-            backdrop-filter: blur(10px);
-        }
-
-        .signin-signup-btn:hover {
-            background-color: #fff;
-            color: #000;
-        }
-
-        /* Social Icons */
-        .social-icons {
-            margin-top: 20px;
-        }
-
-        .social-icons a {
-            color: #fff;
-            margin: 0 10px;
-            font-size: 1.5rem;
-            transition: color 0.3s ease;
-            backdrop-filter: blur(10px);
-        }
-
-        .social-icons a:hover {
-            color: #22a1f5;
-        }
-
-        /* Animation */
-        @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translate3d(0, 40px, 0);
-            }
-            to {
-                opacity: 1;
-                transform: translate3d(0, 0, 0);
-            }
-        }
-
-        /* Media Queries */
-        @media only screen and (max-width: 768px) {
-            .bg-video {
-                width: 100vw;
-                height: 100vh;
-                object-fit: cover;
-                top: 0;
-                left: 0;
-                transform: none;
-            }
-            .navbar {
-                padding: 15px 20px;
-            }
-
-            .container h1 {
-                font-size: 2rem;
-            }
-
-            .container p {
-                font-size: 1rem;
-            }
-        }
-    </style>
+    <link rel="stylesheet" href="{% static 'css/base.css' %}">
 </head>
 <body>
-    <!-- Background Video -->
-    <video autoplay muted loop preload="auto" class="bg-video">
+
+
+<!--<video autoplay muted loop preload="auto" class="bg-video">
         <source src="{% static 'images/solvingTogatherFriends.mp4' %}" type="video/mp4">
         Your browser does not support HTML5 video.
-    </video>
+    </video>-->
 
-    <!-- Overlay -->
     <div class="overlay"></div>
 
-    <!-- Main Content -->
-    <div class="container">
-        <h1>Welcome To Puzzle Room</h1>
-        <p>Experience the ultimate puzzle-solving adventure with your friends!</p>
+    <header>
+        <nav>
+            <div class="logo">Puzzle Room</div>
+            <ul>
+                <li><a href="#about">About</a></li>
+                <li><a href="#features">Features</a></li>
+                <li><a href="#testimonials">Testimonials</a></li>
+            </ul>
+        </nav>
+    </header>
 
-        <!-- Buttons -->
-        <a href="{% url 'user:auth_page' %}">
-            <button class="signin-signup-btn">Sign In or Register</button>
-        </a>
-        <form method="POST" action="{% url 'user:auth_page' %}" style="display: inline;">
-            {% csrf_token %}
-            <input type="hidden" name="form_type" value="guest_login">
-            <button class="signin-signup-btn" type="submit">Continue as Guest</button>
-        </form>
+    <main>
+        <section id="hero" class="container">
+            <h1>Welcome To Puzzle Room</h1>
+            <p>Experience the ultimate puzzle-solving adventure with your friends!</p>
 
-        <!-- Social Icons -->
-        <div class="social-icons">
-            <a href="#"><i class="fab fa-facebook-f"></i></a>
-            <a href="#"><i class="fab fa-twitter"></i></a>
-            <a href="#"><i class="fab fa-instagram"></i></a>
-        </div>
-    </div>
+            <div class="cta-buttons">
+                <a href="{% url 'user:auth_page' %}" class="signin-signup-btn">Sign In or Register</a>
+                <form method="POST" action="{% url 'user:auth_page' %}" style="display: inline;">
+                    {% csrf_token %}
+                    <input type="hidden" name="form_type" value="guest_login">
+                    <button class="signin-signup-btn" type="submit">Continue as Guest</button>
+                </form>
+            </div>
+
+            <div class="social-icons">
+                <a href="#"><i class="fab fa-facebook-f"></i></a>
+                <a href="#"><i class="fab fa-twitter"></i></a>
+                <a href="#"><i class="fab fa-instagram"></i></a>
+            </div>
+        </section>
+
+        <section id="about" class="container">
+            <h2>About Puzzle Room</h2>
+            <p>Puzzle Room is a cutting-edge online platform that brings the thrill of escape rooms to your digital devices. Solve intricate puzzles, uncover hidden clues, and race against time in our immersive virtual environments.</p>
+        </section>
+
+        <section id="features" class="container">
+            <h2>Features</h2>
+            <div class="feature-grid">
+                <div class="feature-item">
+                    <i class="fas fa-users"></i>
+                    <h3>Multiplayer</h3>
+                    <p>Team up with friends or join random players for collaborative puzzle-solving.</p>
+                </div>
+                <div class="feature-item">
+                    <i class="fas fa-brain"></i>
+                    <h3>Challenging Puzzles</h3>
+                    <p>Face a variety of mind-bending puzzles that will test your logic and creativity.</p>
+                </div>
+                <div class="feature-item">
+                    <i class="fas fa-clock"></i>
+                    <h3>Real-time Gameplay</h3>
+                    <p>Experience the thrill of racing against the clock in our timed puzzle rooms.</p>
+                </div>
+                <div class="feature-item">
+                    <i class="fas fa-trophy"></i>
+                    <h3>Leaderboards</h3>
+                    <p>Compete with players worldwide and climb the global rankings.</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="testimonials" class="container">
+            <h2>What Players Say</h2>
+            <div class="testimonial-slider">
+                <div class="testimonial">
+                    <p>"Puzzle Room is addictive! I've never had so much fun solving puzzles online."</p>
+                    <span>- John Doe.</span>
+                </div>
+                <div class="testimonial">
+                    <p>"The multiplayer feature is fantastic. It's great to solve puzzles with friends from around the world."</p>
+                    <span>- John Doe.</span>
+                </div>
+                <div class="testimonial">
+                    <p>"The puzzles are challenging and the cyberpunk atmosphere is immersive. Highly recommended!"</p>
+                    <span>- John Doe.</span>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <p>&copy; 2023 Puzzle Room. All rights reserved.</p>
+    </footer>
+
+    <script src="{% static 'js/enhanced_base.js' %}"></script>
 </body>
 </html>

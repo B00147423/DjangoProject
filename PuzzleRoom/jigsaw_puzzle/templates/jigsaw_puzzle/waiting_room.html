@@ -1,57 +1,13 @@
+{% load static %}
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Waiting Room - {{ room.name }}</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f4f9;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-        }
+    <link rel="stylesheet" href="{% static 'jigsaw_puzzle/css/waiting_room.css' %}">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
 
-        .container {
-            background: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-            text-align: center;
-            width: 300px;
-        }
-
-        h2 {
-            margin-bottom: 15px;
-        }
-
-        .code-box {
-            background: #f9f9f9;
-            padding: 10px;
-            border-radius: 5px;
-            font-size: 18px;
-            margin-bottom: 15px;
-        }
-
-        button {
-            padding: 10px 20px;
-            font-size: 16px;
-            background-color: #007bff;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-
-        button:hover {
-            background-color: #0056b3;
-        }
-
-        p {
-            margin: 10px 0;
-        }
-    </style>
 </head>
 <body>
     <div class="container">
@@ -66,46 +22,9 @@
         </div>
     </div>
 
+    <script>
+        const context = JSON.parse('{{ js_context|safe }}');
+    </script>
+    <script src="{% static 'jigsaw_puzzle/js/waiting_room.js' %}"></script>
 </body>
 </html>
-<script>
-    // Parse the Django-provided JSON context
-    const context = JSON.parse('{{ js_context|safe }}');
-
-    // Now you can use `context` in JavaScript
-    const roomId = context.room.id;
-    const playerRole = context.player_role;
-    const redirectUrl = context.redirect_url;
-
-    // Initialize WebSocket
-    const socket = new WebSocket(`ws://${window.location.host}/ws/puzzle/${roomId}/`);
-
-    let isReady = false;
-
-    socket.onmessage = function (event) {
-        const data = JSON.parse(event.data);
-
-        if (data.type === 'player_ready') {
-            const statusMessage = document.getElementById('statusMessage');
-            if (data.player_role === 'player1') {
-                statusMessage.innerText = `Player 1 is ${data.is_ready ? "ready" : "not ready"}`;
-            } else if (data.player_role === 'player2') {
-                statusMessage.innerText = `Player 2 is ${data.is_ready ? "ready" : "not ready"}`;
-            }
-        } else if (data.type === 'both_ready') {
-            document.getElementById('statusMessage').innerText = 'Both players are ready. Redirecting...';
-            setTimeout(() => {
-                window.location.href = redirectUrl;
-            }, 2000);
-        }
-    };
-
-    function toggleReady() {
-        isReady = !isReady;
-        socket.send(JSON.stringify({
-            type: 'player_ready',
-            player_role: playerRole,
-            is_ready: isReady,
-        }));
-    }
-</script>

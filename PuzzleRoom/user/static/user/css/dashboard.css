@@ -1,0 +1,190 @@
+
+    :root {
+        --primary-color: #00ff00;
+        --secondary-color: #ff00ff;
+        --background-color: #111;
+        --text-color: #fff;
+        --grid-background: rgba(255, 255, 255, 0.1);
+        --input-background: rgba(255, 255, 255, 0.1);
+        --input-border: #444;
+    }
+
+    body {
+        display: flex;
+        flex-direction: column;
+        min-height: 100vh;
+        margin: 0;
+        padding: 0;
+        line-height: 1.6;
+        background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+        color: var(--text-color);
+        font-family: 'Roboto', sans-serif;
+    }
+
+    .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 2rem;
+    }
+
+    .logo {
+        font-family: 'Orbitron', sans-serif;
+        font-size: 1.5rem;
+        color: var(--primary-color);
+        text-shadow: 0 0 10px var(--primary-color);
+    }
+
+    .nav-links a:hover {
+        color: var(--primary-color);
+        text-shadow: 0 0 10px var(--primary-color);
+    }
+
+    main {
+        border-radius: 8px;
+        background-color: rgba(255, 255, 255, 0.05);
+        flex: 1 0 auto;
+        padding: 2rem;
+        text-align: center;
+        margin-top: 70px;
+        box-shadow: 0 0 20px rgba(0, 255, 255, 0.3);
+    }
+
+    h1, h2 {
+        font-family: 'Orbitron', sans-serif;
+        color: var(--primary-color);
+        margin-top: 75px;
+        text-shadow: 0 0 10px var(--primary-color);
+    }
+
+    .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 2rem;
+        margin: 2rem auto;
+        max-width: 1200px;
+        padding: 2rem;
+        text-align: center;
+        justify-content: center;
+    }
+
+    .card {
+        background-color: rgba(255, 255, 255, 0.1);
+        border-radius: 8px;
+        padding: 2rem;
+        text-align: center;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        box-shadow: 0 0 15px rgba(0, 255, 255, 0.2);
+    }
+
+    .card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 0 25px rgba(0, 255, 255, 0.4);
+    }
+
+    .card-icon {
+        font-size: 4rem;
+        color: var(--secondary-color);
+        margin-bottom: 1rem;
+        text-shadow: 0 0 15px var(--secondary-color);
+    }
+
+    .btn {
+        background-color: var(--primary-color);
+        color: var(--background-color);
+        border: none;
+        padding: 0.75rem 1.5rem;
+        font-size: 1rem;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: background-color 0.3s ease, box-shadow 0.3s ease;
+        font-family: 'Orbitron', sans-serif;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+
+    .btn:hover {
+        background-color: var(--secondary-color);
+        box-shadow: 0 0 15px var(--secondary-color);
+    }
+
+    .modal {
+        display: none;
+        position: fixed;
+        z-index: 1000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.7);
+    }
+
+    .modal-content {
+        background-color: var(--background-color);
+        border: 1px solid var(--secondary-color);
+        border-radius: 8px;
+        width: 90%;
+        max-width: 500px;
+        margin: 10% auto;
+        padding: 2rem;
+        animation: slide-down 0.3s ease-out;
+        box-shadow: 0 0 25px rgba(255, 0, 255, 0.3);
+    }
+
+    @keyframes slide-down {
+        from {
+            transform: translateY(-50px);
+            opacity: 0;
+        }
+        to {
+            transform: translateY(0);
+            opacity: 1;
+        }
+    }
+
+    .close {
+        color: var(--secondary-color);
+        float: right;
+        font-size: 28px;
+        font-weight: bold;
+        cursor: pointer;
+        transition: color 0.3s ease;
+    }
+
+    .close:hover {
+        color: var(--primary-color);
+    }
+
+    form {
+        display: flex;
+        flex-direction: column;
+    }
+
+    label {
+        margin-top: 1rem;
+        color: var(--primary-color);
+        font-family: 'Orbitron', sans-serif;
+    }
+
+    input, select {
+        margin-top: 0.5rem;
+        padding: 0.5rem;
+        background-color: var(--input-background);
+        border: 1px solid var(--input-border);
+        color: var(--text-color);
+        border-radius: 4px;
+        transition: box-shadow 0.3s ease;
+    }
+
+    input:focus, select:focus {
+        outline: none;
+        box-shadow: 0 0 10px var(--primary-color);
+    }
+
+    footer {
+        flex: 0 0 auto;
+        text-align: center;
+        padding: 2rem 0;
+        background-color: rgba(255, 255, 255, 0.1);
+        font-size: 0.9rem;
+        color: var(--text-color);
+    }
