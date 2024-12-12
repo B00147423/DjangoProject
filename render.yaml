@@ -1,0 +1,7 @@
+Note: You've reached your monthly quota. Switching to free model (Haiku 3.5) for this request. You can top up on your dashboard at https://trypear.ai/.```yaml
+services:
+  - type: web
+    name: puzzleroom
+    env: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: daphne -b 0.0.0.0 -p $PORT PuzzleRoom.asgi:application
