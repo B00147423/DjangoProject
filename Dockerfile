@@ -23,4 +23,4 @@ COPY . /code/
 RUN python manage.py collectstatic --noinput --verbosity 3
 
 # Start the application
-CMD ["daphne", "-b", "0.0.0.0", "-p", "8000", "PuzzleRoom.asgi:application"]
+CMD ["daphne", "-b", "0.0.0.0", "-p", "8000", "PuzzleRoom.PuzzleRoom.asgi:application"]
