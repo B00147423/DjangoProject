@@ -5,7 +5,7 @@ from channels.routing import ProtocolTypeRouter, URLRouter
 from channels.auth import AuthMiddlewareStack
 
 # Set up the DJANGO_SETTINGS_MODULE environment variable
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "PuzzleRoom.settings")
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "PuzzleRoom.PuzzleRoom.settings")
 
 # Initialize Django
 django.setup()
