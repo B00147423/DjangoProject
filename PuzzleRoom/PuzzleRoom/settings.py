@@ -110,14 +110,25 @@ WSGI_APPLICATION = 'PuzzleRoom.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.postgresql',
+#         'NAME': 'puzzleRoom01',
+#         'USER': 'postgres',
+#         'PASSWORD': 'pass',
+#         'HOST': '127.0.0.1',
+#         'PORT': '5432',
+#     }
+# }
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'puzzleRoom01',
-        'USER': 'postgres',
-        'PASSWORD': 'pass',
-        'HOST': '127.0.0.1',
-        'PORT': '5432',
+        'NAME': os.getenv('puzzleRoom'),
+        'USER': os.getenv('puzzle_room01'),
+        'PASSWORD': os.getenv('oFFOdaoQlS6ENP7nyUrhqddqP3TL4ZXJ'),
+        'HOST': os.getenv('postgresql://puzzle_rooom01:oFFOdaoQlS6ENP7nyUrhqddqP3TL4ZXJ@dpg-ctddhpjqf0us73bp4fb0-a/puzzle_room01'),
+        'PORT': os.getenv('5432'),
     }
 }
 

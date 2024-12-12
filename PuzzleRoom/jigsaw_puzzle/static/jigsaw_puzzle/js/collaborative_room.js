@@ -1,3 +1,4 @@
+//C:\Users\beka\OneDrive\Desktop\Year4DjangoMajor-Project\DjangoProject\PuzzleRoom\jigsaw_puzzle\static\jigsaw_puzzle\js\collaborative_room.js
 document.addEventListener("DOMContentLoaded", () => {
     // Extract Django Template Data from JSON Script Tags
     const roomId = JSON.parse(document.getElementById('room-data').textContent).room_id;
