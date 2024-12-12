@@ -1,30 +1,17 @@
-# Use an official Python runtime as a parent image
-FROM python:3.11-slim
-
-# Set environment variables
-ENV PYTHONDONTWRITEBYTECODE=1
-ENV PYTHONUNBUFFERED=1
-ENV PYTHONPATH=/code
+# Use the official Python image
+FROM python:3.11
 
 # Set the working directory
-WORKDIR /code
+WORKDIR /app
 
-# Install system dependencies
-RUN apt-get update && apt-get install -y build-essential cmake libjpeg-dev libpng-dev libtiff-dev libx11-dev libgtk-3-dev
+# Copy only the relevant folder (PuzzleRoom) into the container
+COPY DjangoProject/PuzzleRoom /app
 
 # Install dependencies
-COPY requirements.txt /code/
-RUN pip install --upgrade pip setuptools wheel
-RUN pip install -r requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy the entire project into the container
-COPY . /code/
+# Set environment variables
+ENV DJANGO_SETTINGS_MODULE=PuzzleRoom.settings
 
-# Ensure the working directory is set correctly
-WORKDIR /code
-
-# Collect static files
-RUN python manage.py collectstatic --noinput --verbosity 3
-
-# Start the application
-CMD ["daphne", "-b", "0.0.0.0", "-p", "8000", "PuzzleRoom.asgi:application"]
+# Run migrations and start Daphne
+CMD python manage.py migrate && daphne -b 0.0.0.0 -p 8000 PuzzleRoom.asgi:application
