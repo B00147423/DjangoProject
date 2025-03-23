@@ -6,74 +6,362 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ room.name }} (Room ID: {{ room.room_id }})</title>
+    <title>{{ room.name }} - Sliding Puzzle Challenge</title>
     <meta name="csrf-token" content="{{ csrf_token }}">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
     <style>
+        :root {
+            --primary-color: #00ff9d;
+            --secondary-color: #4fc3f7;
+            --background-color: #0a0a1f;
+            --text-color: #ffffff;
+            --grid-background: rgba(255, 255, 255, 0.05);
+            --piece-background: #1a1a2e;
+            --piece-border: #4fc3f7;
+            --neon-glow: 0 0 10px var(--primary-color), 0 0 20px var(--primary-color), 0 0 30px var(--primary-color);
+            --header-gradient: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            --tile-size: 80px;
+        }
+
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            width: 100vw;
+            font-family: 'Orbitron', sans-serif;
+            background: var(--background-color);
+            color: var(--text-color);
+            overflow: hidden;
+            background: linear-gradient(135deg, #0a0a1f 0%, #1a1a2e 100%);
+        }
+
+        .main-container {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            width: 100vw;
+            padding: 1rem;
+            box-sizing: border-box;
+            overflow: hidden;
+        }
+
+        .game-header {
+            background: var(--header-gradient);
+            padding: 1rem;
+            border-radius: 15px;
+            border: 1px solid var(--secondary-color);
+            margin-bottom: 1rem;
+            box-shadow: 0 0 20px rgba(79, 195, 247, 0.2);
+            text-align: center;
+        }
+
+        .game-header h1 {
+            margin: 0;
+            color: var(--primary-color);
+            text-shadow: 0 0 10px var(--primary-color);
+            font-size: clamp(1.5rem, 3vw, 2.5rem);
+            letter-spacing: 2px;
+        }
+
+        .game-header p {
+            color: var(--text-color);
+            opacity: 0.8;
+            margin-top: 0.5rem;
+            font-family: 'Roboto', sans-serif;
+        }
+
+        .game-container {
+            flex: 1;
+            display: flex;
+            gap: 2rem;
+            padding: 1rem;
+            justify-content: center;
+            align-items: center;
+            min-height: 0;
+        }
+
+        .puzzle-section {
+            flex: 1;
+            max-width: 600px;
+            background: rgba(26, 26, 46, 0.9);
+            border-radius: 15px;
+            padding: 1.5rem;
+            border: 1px solid var(--secondary-color);
+            box-shadow: 0 0 20px rgba(79, 195, 247, 0.2);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            transition: all 0.3s ease;
+        }
+
+        .puzzle-section:hover {
+            box-shadow: 0 0 30px rgba(79, 195, 247, 0.3);
+            border-color: var(--primary-color);
+        }
+
+        .info-section {
+            flex: 1;
+            max-width: 400px;
+            background: rgba(26, 26, 46, 0.7);
+            border-radius: 15px;
+            padding: 1.5rem;
+            border: 1px solid var(--secondary-color);
+            color: var(--text-color);
+            font-family: 'Roboto', sans-serif;
+            transition: all 0.3s ease;
+        }
+
+        .info-section:hover {
+            box-shadow: 0 0 30px rgba(79, 195, 247, 0.3);
+            border-color: var(--primary-color);
+        }
+
         #puzzle-container {
             display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 5px;
-            width: 320px;  /* Set according to your image size */
-            height: 320px; /* Adjust to match image proportions */
+            grid-template-columns: repeat(var(--grid-size), var(--tile-size));
+            gap: 3px;
+            background: var(--grid-background);
+            padding: 5px;
+            border-radius: 10px;
+            border: 1px solid var(--secondary-color);
+            box-shadow: inset 0 0 20px rgba(79, 195, 247, 0.2);
+            margin: 1rem 0;
+            justify-content: center;
         }
 
         .tile {
-            width: 75px; /* Adjust based on the image size */
-            height: 75px;
-            background-size: 100% 100%; /* Scale the image to fit the tile */
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 0; /* Remove any text content */
+            width: var(--tile-size);
+            height: var(--tile-size);
+            background-size: cover;
+            background-position: center;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 1px solid var(--piece-border);
+            box-shadow: 0 0 10px rgba(79, 195, 247, 0.3);
+            position: relative;
+            background-color: rgba(255, 255, 255, 0.9);
+        }
+
+        .tile:hover {
+            transform: scale(1.02);
+            box-shadow: 0 0 15px var(--secondary-color);
+            border-color: var(--primary-color);
+        }
+
+        .tile::after {
+            content: attr(data-number);
+            position: absolute;
+            top: 5px;
+            left: 5px;
+            background: rgba(26, 26, 46, 0.9);
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 14px;
+            font-weight: bold;
+            color: var(--primary-color);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+            text-shadow: 0 0 5px var(--primary-color);
         }
 
         .empty {
-            background-color: white;
+            background-color: rgba(26, 26, 46, 0.5);
+            border: 2px dashed var(--secondary-color);
+            box-shadow: inset 0 0 15px rgba(79, 195, 247, 0.2);
+        }
+
+        .empty::after {
+            display: none;
+        }
+
+        .game-stats {
+            display: flex;
+            gap: 1.5rem;
+            justify-content: center;
+            margin: 1rem 0;
+            font-family: 'Orbitron', sans-serif;
+        }
+
+        .game-stats p {
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--text-color);
+        }
+
+        .game-stats strong {
+            color: var(--primary-color);
+            text-shadow: 0 0 5px var(--primary-color);
+        }
+
+        .timer {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: var(--primary-color);
+            text-shadow: 0 0 10px var(--primary-color);
+            margin: 0.5rem 0;
+            font-family: 'Orbitron', sans-serif;
+        }
+
+        .moves-counter {
+            font-size: 1.2rem;
+            color: var(--text-color);
+            margin: 0.5rem 0;
+        }
+
+        .btn {
+            background: var(--secondary-color);
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-family: 'Orbitron', sans-serif;
+            font-weight: bold;
+            letter-spacing: 1px;
+            transition: all 0.3s ease;
+            margin-top: 1rem;
+            box-shadow: 0 4px 10px rgba(79, 195, 247, 0.3);
+        }
+
+        .btn:hover {
+            background: var(--primary-color);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(0, 255, 157, 0.4);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .stats {
+            background: rgba(26, 26, 46, 0.5);
+            border-radius: 10px;
+            padding: 1rem;
+            margin-top: 1rem;
+        }
+
+        .stats-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.75rem;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 5px;
+            margin: 0.5rem 0;
+            transition: all 0.3s ease;
+        }
+
+        .stats-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateX(5px);
+        }
+
+        .completion-message {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: var(--header-gradient);
+            padding: 2rem;
+            border-radius: 15px;
+            border: 2px solid var(--primary-color);
+            box-shadow: 0 0 30px var(--primary-color);
+            color: var(--text-color);
+            text-align: center;
+            animation: fadeIn 0.5s ease-out;
+            z-index: 1000;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translate(-50%, -50%) scale(0.8); }
+            to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+        }
+
+        @media (max-width: 1024px) {
+            .game-container {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .puzzle-section, .info-section {
+                max-width: 100%;
+            }
+        }
+
+        @media (max-width: 480px) {
+            :root {
+                --tile-size: 60px;
+            }
         }
     </style>
 </head>
 <body>
-    <h1>{{ room.name }} (Room ID: {{ room.room_id }})</h1>
-    <div id="participants">
-        <h3>Participants in this room:</h3>
-        <ul>
-            <li>{{ room.player1.username }}</li>
-            {% if room.player2 %}
-            <li>{{ room.player2.username }}</li>
-            {% else %}
-            <li>Waiting for Player 2...</li>
-            {% endif %}
-        </ul>
+    <div class="main-container">
+        <header class="game-header">
+            <h1>{{ room.name }}</h1>
+            <p>Sliding Puzzle Challenge</p>
+        </header>
+
+        <div class="game-container">
+            <div class="puzzle-section">
+                <div class="game-stats">
+                    <p><strong>⏳ Time:</strong> <span id="timer">00:00</span></p>
+                    <p><strong>🔢 Moves:</strong> <span id="moveCount">0</span></p>
+                </div>
+                <div id="puzzle-container"></div>
+                <button onclick="shuffleAndReset()" class="btn">New Game</button>
+            </div>
+
+            <div class="info-section">
+                <h2 class="text-xl font-bold mb-4">Game Stats</h2>
+                <div class="stats">
+                    <div class="stats-item">
+                        <span>Best Time:</span>
+                        <span id="bestTime">--:--</span>
+                    </div>
+                    <div class="stats-item">
+                        <span>Best Moves:</span>
+                        <span id="bestMoves">--</span>
+                    </div>
+                    <div class="stats-item">
+                        <span>Games Completed:</span>
+                        <span id="gamesCompleted">0</span>
+                    </div>
+                </div>
+                <div class="mt-6">
+                    <h3 class="font-bold mb-2">How to Play:</h3>
+                    <ul class="list-disc pl-5 space-y-2 opacity-80">
+                        <li>Click tiles adjacent to the empty space to move them</li>
+                        <li>Arrange numbers from 1-15 in order</li>
+                        <li>Complete the puzzle in as few moves as possible</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
     </div>
 
-    <!-- Puzzle grid -->
-    <div id="puzzle-container"></div>
+    <div class="completion-message" id="completionMessage">
+        <h2 class="text-2xl font-bold mb-4">🎉 Puzzle Completed! 🎉</h2>
+        <p class="mb-4">Congratulations! You solved it in <span id="finalMoves">0</span> moves!</p>
+        <p class="mb-4">Time: <span id="finalTime">00:00</span></p>
+        <div class="flex gap-4 justify-center">
+            <button onclick="shuffleAndReset()" class="btn">
+                Play Again
+            </button>
+            <button onclick="document.getElementById('completionMessage').style.display='none'" class="btn" style="background: rgba(255,255,255,0.1);">
+                Continue Looking
+            </button>
+        </div>
+    </div>
 
-    <!-- Button to generate invite link -->
-    <button id="generateInviteBtn">Generate Invite Link</button>
-    <p id="inviteLink"></p>
-
-    <!-- Pass room_id and puzzle_state to JavaScript -->
     <script>
         const roomId = "{{ room.room_id }}";
         const mediaUrl = "{{ MEDIA_URL }}";
-        const savedPuzzleState = JSON.parse('{{ puzzle_state|escapejs }}') || [...Array(15).keys(), 'empty'];
+        const savedPuzzleState = '{{ puzzle_state|escapejs }}';
     </script>
 
-    <!-- Script for generating invite link -->
-    <script>
-        document.getElementById('generateInviteBtn').addEventListener('click', function() {
-            fetch(`/rooms/generate-invite-link/${roomId}/`)
-            .then(response => response.json())
-            .then(data => {
-                if (data.status === 'success') {
-                    document.getElementById('inviteLink').innerText = `Invite Link: ${data.invite_link}`;
-                }
-            });
-        });
-    </script>
-
-    <!-- Load the sliding puzzle script -->
     <script src="{% static 'user/js/sliding_puzzle.js' %}"></script>
 </body>
 </html>

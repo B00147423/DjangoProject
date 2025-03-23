@@ -1,73 +1,65 @@
+{% extends 'navbar/navbar.html' %}
 {% load static %}
 {% load socialaccount %}
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Puzzle Room - User Settings</title>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="{% static 'user/css/settings.css' %}">
-    <script src="{% static 'user/js/settings.js' %}"></script>
- 
-</head>
-<body>
-    <div class="container">
-        <header>
-            {% include 'navbar/navbar.html' %}
-        </header>
-    
-        <main>
-            <h1>User Settings</h1>
-            <div class="settings-grid">
-                <div class="settings-section">
-                    <h2>Account</h2>
-                    <form method="post" action="{% url 'user:change_username' %}" class="settings-form">
-                        {% csrf_token %}
-                        <div class="form-group">
-                            <label for="username">Username</label>
-                            {{ change_username_form.username }}
-                        </div>
-                        <button type="submit" class="btn">Update Username</button>
-                    </form>
-                </div>
-                <div class="settings-section">
-                    <h2>Email</h2>
-                    <form method="post" action="{% url 'user:change_email' %}" class="settings-form">
-                        {% csrf_token %}
-                        <div class="form-group">
-                            <label for="email">Email</label>
-                            {{ change_email_form.email }}
-                        </div>
-                        <button type="submit" class="btn">Update Email</button>
-                    </form>
-                    <form method="post" action="{% url 'user:resend_verification_email' %}" class="settings-form">
-                        {% csrf_token %}
-                        <button type="submit" class="btn btn-secondary">Resend Verification Email</button>
-                    </form>
-                </div>
-                <div class="settings-section">
-                    <h2>Password</h2>
-                    <form method="post" action="{% url 'user:change_password' %}" class="settings-form">
-                        {% csrf_token %}
-                        <div class="form-group">
-                            <label for="old_password">Current Password</label>
-                            {{ change_password_form.old_password }}
-                        </div>
-                        <div class="form-group">
-                            <label for="new_password1">New Password <span class="password-warning">!</span></label>
-                            <input type="password" id="new_password1" name="new_password1" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="new_password2">Confirm New Password <span class="password-warning">!</span></label>
-                            <input type="password" id="new_password2" name="new_password2" required>
-                        </div>
-                        <button type="submit" class="btn">Change Password</button>
-                    </form>
-                </div>
-            </div>
-        </main>
-    </div>
 
-</body>
-</html>
+{% block title %}Puzzle Room - User Settings{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'user/css/settings.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="settings-container">
+    <h1>User Settings</h1>
+    <div class="settings-grid">
+        <div class="settings-section">
+            <h2>Account</h2>
+            <form method="post" action="{% url 'user:change_username' %}" class="settings-form">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label for="username">Username</label>
+                    {{ change_username_form.username }}
+                </div>
+                <button type="submit" class="btn">Update Username</button>
+            </form>
+        </div>
+        <div class="settings-section">
+            <h2>Email</h2>
+            <form method="post" action="{% url 'user:change_email' %}" class="settings-form">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label for="email">Email</label>
+                    {{ change_email_form.email }}
+                </div>
+                <button type="submit" class="btn">Update Email</button>
+            </form>
+            <form method="post" action="{% url 'user:resend_verification_email' %}" class="settings-form">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-secondary">Resend Verification Email</button>
+            </form>
+        </div>
+        <div class="settings-section">
+            <h2>Password</h2>
+            <form method="post" action="{% url 'user:change_password' %}" class="settings-form">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label for="old_password">Current Password</label>
+                    {{ change_password_form.old_password }}
+                </div>
+                <div class="form-group">
+                    <label for="new_password1">New Password <span class="password-warning">!</span></label>
+                    <input type="password" id="new_password1" name="new_password1" required>
+                </div>
+                <div class="form-group">
+                    <label for="new_password2">Confirm New Password <span class="password-warning">!</span></label>
+                    <input type="password" id="new_password2" name="new_password2" required>
+                </div>
+                <button type="submit" class="btn">Change Password</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+{% block extra_scripts %}
+<script src="{% static 'user/js/settings.js' %}"></script>
+{% endblock %}{% endblock %}

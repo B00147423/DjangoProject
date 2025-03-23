@@ -12,12 +12,13 @@ django.setup()
 # Import WebSocket routing after Django setup to avoid circular imports
 from jigsaw_puzzle.routing import websocket_urlpatterns as jigsaw_websocket_urlpatterns
 from sliding_puzzle.routing import websocket_urlpatterns as sliding_websocket_urlpatterns
+from physics_puzzle.routing import websocket_urlpatterns as physics_websocket_urlpatterns  # ✅ Add this
 
 application = ProtocolTypeRouter({
     "http": get_asgi_application(),
     "websocket": AuthMiddlewareStack(
         URLRouter(
-            jigsaw_websocket_urlpatterns + sliding_websocket_urlpatterns
+            jigsaw_websocket_urlpatterns + sliding_websocket_urlpatterns + physics_websocket_urlpatterns 
         )
     ),
 })

@@ -13,56 +13,96 @@
     <link rel="stylesheet" href="{% static 'jigsaw_puzzle/css/collaborative_room.css' %}">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.0.5"></script>
 
     <!-- JavaScript Linking -->
     <script src="{% static 'jigsaw_puzzle/js/collaborative_room.js' %}" defer></script>
 </head>
-
 <body>
-<header>
-    <h1 class="text-3xl font-bold text-center">Collaborative Puzzle Room: {{ room.name }}</h1>
-    <p class="text-center mt-2">Work together to solve the puzzle!</p>
-</header>
+    <div class="outer-container">
+        <!-- Header -->
+        <header class="game-header">
+            <h1>Collaborative Puzzle Room: {{ room.name }}</h1>
+            <p>Work together to solve the puzzle!</p>
+            <div id="puzzle-preview-modal" class="modal">
+                <span class="close">&times;</span>
+                <img class="modal-content" id="puzzle-preview-image" alt="Puzzle Preview">
+            </div>
+            
+            <button id="preview-button">Preview Puzzle</button>
+            <!-- Timer and Move Counter -->
+            <div class="game-stats">
+                <p><strong>⏳ Time:</strong> <span id="game-timer">00:00</span></p>
+                <p><strong>🔢 Moves:</strong> <span id="move-counter">0</span></p>
+            </div>
 
-<div class="container">
-    <!-- Participants Section -->
-    <div class="participants">
-        <h2>Participants</h2>
-        <ul>
-            {% for participant in participants %}
-            <li>
-                {% if participant.profile.avatar %}
-                    <img src="{{ participant.profile.avatar.url }}" alt="{{ participant.username }}">
-                {% else %}
-                    <div class="avatar">{{ participant.username|slice:":1" }}</div>
-                {% endif %}
-                <span>{{ participant.username }}</span>
-            </li>
-            {% endfor %}
-        </ul>
-    </div>
+        </header>
 
-    <!-- Game Area -->
-    <div class="flex-container">
-        <div id="pieces-container" class="md:w-1/4">
-            <h2 class="text-xl font-semibold mb-4 text-center">Puzzle Pieces</h2>
-            <div class="grid grid-cols-6 gap-2" id="pieces-grid"></div>
+        <!-- Game Window (Inner Frame) -->
+        <div class="inner-frame">
+            <!-- Participants -->
+            <div class="participants">
+                <h2>Participants</h2>
+                <ul>
+                    {% for participant in participants %}
+                    <li>
+                        {% if participant.profile.avatar %}
+                            <img src="{{ participant.profile.avatar.url }}" alt="{{ participant.username }}">
+                        {% else %}
+                            <div class="avatar">{{ participant.username|slice:":1" }}</div>
+                        {% endif %}
+                        <span>{{ participant.username }}</span>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+
+            <!-- Game Area -->
+            <div class="game-area">
+                <div id="pieces-container">
+                    <h2>Puzzle Pieces</h2>
+                    <div id="pieces-grid"></div>
+                </div>
+                <div id="grid-container">
+
+
+                    
+                </div>
+            </div>
+            <!-- Chat Box -->
+            <div id="chat-container" class="chat-container">
+                <div id="chat-header" class="chat-header">
+                    <span>Chat</span>
+                    <button id="toggle-chat" class="toggle-chat">-</button>
+                </div>
+                <div id="chat-content">
+                    <div id="chat-box" class="chat-box">
+                        <!-- Chat messages will be appended here -->
+                    </div>
+                    <input type="text" id="chat-input" placeholder="Type a message..." />
+                    <button id="send-chat">Send</button>
+                </div>
+            </div>
         </div>
-        <div id="grid-container" class="flex-grow"></div>
     </div>
-</div>
 
-<!-- Pass Puzzle Data -->
-<script id="puzzle-data" type="application/json">
-    {{ pieces_data|safe }}
-</script>
-<script id="room-data" type="application/json">
-    {
-        "room_id": "{{ room.id }}",
-        "player_role": "{{ player_role }}",
-        "difficulty": "{{ room.difficulty }}"
-    }
-</script>
-
+    <!-- Puzzle Data -->
+    <script id="puzzle-data" type="application/json">
+        {{ pieces_data|safe }}
+    </script>
+    <script id="room-data" type="application/json">
+        {
+            "room_id": "{{ room.id }}",
+            "player_role": "{{ player_role }}",
+            "username": "{{ user.username }}",
+            "difficulty": "{{ room.difficulty }}"
+        }
+    </script>
+    <script id="chat-messages" type="application/json">
+        {{ chat_messages|safe }}
+    </script>
+    <script>
+        const puzzleImageUrl = "{{ full_image_url }}";
+    </script>
 </body>
 </html>

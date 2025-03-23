@@ -194,27 +194,42 @@ def auth_page(request):
 
                 # Edge Case 1: All fields are required
                 if not all([username, first_name, last_name, email, password]):
-                    return render(request, 'user/auth_page.html', {'error_message': 'All fields are required.', 'form': 'signup'})
+                    return render(request, 'user/auth_page.html', {
+                        'error_message': 'All fields are required.',
+                        'form': 'signup'  # Stay on the signup form
+                    })
 
                 # Edge Case 2: Username should be unique
                 if User.objects.filter(username=username).exists():
-                    return render(request, 'user/auth_page.html', {'error_message': 'Username is already taken.', 'form': 'signup'})
+                    return render(request, 'user/auth_page.html', {
+                        'error_message': 'Username is already taken.',
+                        'form': 'signup'  # Stay on the signup form
+                    })
 
                 # Edge Case 3: Valid Email format
                 try:
                     validate_email(email)
                 except ValidationError:
-                    return render(request, 'user/auth_page.html', {'error_message': 'Please enter a valid email address.', 'form': 'signup'})
+                    return render(request, 'user/auth_page.html', {
+                        'error_message': 'Please enter a valid email address.',
+                        'form': 'signup'  # Stay on the signup form
+                    })
 
                 # Edge Case 4: Email should be unique
                 if User.objects.filter(email=email).exists():
-                    return render(request, 'user/auth_page.html', {'error_message': 'An account with this email already exists.', 'form': 'signup'})
+                    return render(request, 'user/auth_page.html', {
+                        'error_message': 'An account with this email already exists.',
+                        'form': 'signup'  # Stay on the signup form
+                    })
 
                 # Edge Case 5: Password strength
                 try:
                     validate_password_strength(password)
                 except ValidationError as e:
-                    return render(request, 'user/auth_page.html', {'error_message': str(e), 'form': 'signup'})
+                    return render(request, 'user/auth_page.html', {
+                        'error_message': str(e),
+                        'form': 'signup'  # Stay on the signup form
+                    })
 
                 # Create the user and hash the password
                 user = User.objects.create_user(
@@ -233,11 +248,12 @@ def auth_page(request):
                 login(request, user)
                 return redirect('user:dashboard')
 
-            except IntegrityError:
-                return render(request, 'user/auth_page.html', {'error_message': 'Username or Email already exists', 'form': 'signup'})
             except Exception as e:
-                return render(request, 'user/auth_page.html', {'error_message': 'An error occurred. Please try again later.', 'form': 'signup'})
-
+                print(f"Error during signup: {e}")  # Debugging
+                return render(request, 'user/auth_page.html', {
+                    'error_message': 'An error occurred. Please try again later.',
+                    'form': 'signup'  # Stay on the signup form
+                })
 
         elif form_type == 'signin':
             # Handle sign in
@@ -246,7 +262,10 @@ def auth_page(request):
 
             # Edge Case 6: Both email and password are required
             if not email or not password:
-                return render(request, 'user/auth_page.html', {'error_message': 'Both email and password are required.', 'form': 'signin'})
+                return render(request, 'user/auth_page.html', {
+                    'error_message': 'Both email and password are required.',
+                    'form': 'signin'  # Stay on the signin form
+                })
 
             # Authenticate using email
             try:
@@ -254,13 +273,19 @@ def auth_page(request):
                 try:
                     validate_email(email)
                 except ValidationError:
-                    return render(request, 'user/auth_page.html', {'error_message': 'Please enter a valid email address.', 'form': 'signin'})
+                    return render(request, 'user/auth_page.html', {
+                        'error_message': 'Please enter a valid email address.',
+                        'form': 'signin'  # Stay on the signin form
+                    })
 
                 user = User.objects.get(email=email)
-                
+
                 # Edge Case 8: Check if the password matches
                 if not user.check_password(password):
-                    return render(request, 'user/auth_page.html', {'error_message': 'Invalid email or password.', 'form': 'signin'})
+                    return render(request, 'user/auth_page.html', {
+                        'error_message': 'Invalid email or password.',
+                        'form': 'signin'  # Stay on the signin form
+                    })
 
                 # Set the backend attribute
                 user.backend = 'django.contrib.auth.backends.ModelBackend'
@@ -269,39 +294,40 @@ def auth_page(request):
 
             except User.DoesNotExist:
                 # Edge Case 9: Email not registered
-                return render(request, 'user/auth_page.html', {'error_message': 'Invalid email or password.', 'form': 'signin'})
+                return render(request, 'user/auth_page.html', {
+                    'error_message': 'Invalid email or password.',
+                    'form': 'signin'  # Stay on the signin form
+                })
 
         elif form_type == 'guest_login':
             # Handle guest login
-            user = get_guest_from_cookie(request)
+            guest_username = generate_guest_username()
+            guest_password = ''.join(random.choices(string.ascii_letters + string.digits, k=12))
 
-            if user:
-                user.backend = 'django.contrib.auth.backends.ModelBackend'
-                login(request, user)
-                return redirect('user:dashboard')
-            else:
-                guest_username = generate_guest_username()
-                guest_password = ''.join(random.choices(string.ascii_letters + string.digits, k=12))
+            user = User.objects.create_user(
+                username=guest_username,
+                email=f'{guest_username}@guest.com',
+                password=guest_password,
+                is_guest=True,
+                is_verified=True  # Ensure guest accounts are marked as verified
+            )
 
-                user = User.objects.create_user(
-                    username=guest_username,
-                    email=f'{guest_username}@guest.com',
-                    password=guest_password,
-                    is_guest=True
-                )
+            user.backend = 'django.contrib.auth.backends.ModelBackend'
+            login(request, user)
 
-                user.backend = 'django.contrib.auth.backends.ModelBackend'
-                login(request, user)
-
-                response = redirect('user:dashboard')
-                set_guest_cookie(response, guest_username)
-                return response
+            response = redirect('user:dashboard')
+            set_guest_cookie(response, guest_username)
+            return response
 
         else:
-            return render(request, 'user/auth_page.html', {'error_message': 'Invalid form submission.'})
+            return render(request, 'user/auth_page.html', {
+                'error_message': 'Invalid form submission.',
+                'form': 'signin'  # Default to signin form
+            })
 
     else:
-        return render(request, 'user/auth_page.html')
+        # Default to signin form on GET request
+        return render(request, 'user/auth_page.html', {'form': 'signin'})
 
 def logout_page(request):
     # Get the current user
@@ -323,19 +349,17 @@ def logout_page(request):
 @login_required
 def dashboard_page(request):
     user = request.user
-
-    # Check if the user is verified
-    if not user.is_verified:
+    # Skip verification check for guest users
+    if not user.is_guest and not user.is_verified:
         # Redirect the user to a pending verification page if the email is not verified
-        return redirect('user:pending_verification')  # You can change this to any URL for the verification page
+        return redirect('user:pending_verification')
 
-    # If the user is verified, proceed to render the dashboard
+    # If the user is verified or a guest, proceed to render the dashboard
     context = {
         'is_guest': user.is_guest,
         'username': user.username,
     }
     return render(request, 'user/dashboard.html', context)
-
 
 from django.shortcuts import render
 from .forms import ChangeUsernameForm, ChangeEmailForm, CustomPasswordChangeForm

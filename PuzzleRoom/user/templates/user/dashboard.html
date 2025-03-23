@@ -4,22 +4,32 @@
 {% block title %}Puzzle Room Dashboard{% endblock %}
 
 {% block extra_head %}
-
-<link rel="stylesheet" href="{% static 'user/css/dashboard.css' %}">
+<link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
 <script src="{% static 'user/js/dashboard.js' %}"></script>
-
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
 {% endblock %}
 
 {% block content %}
-<main class="container">
-    <h1>Welcome to Puzzle Room</h1>
+<div class="main-content">
+    <div class="dashboard-header">
+        <h1 class="dashboard-title">Welcome to Puzzle Room</h1>
+        <p class="dashboard-subtitle">Choose your puzzle adventure</p>
+    </div>
 
-    <div class="grid">
+    <div class="dashboard-grid">
         <div class="card">
             <div class="card-icon">🧩</div>
             <h2>Create Jigsaw Puzzle</h2>
             <button onclick="toggleModal('createJigsawRoomModal')" class="btn">
                 Create Jigsaw Room
+            </button>
+        </div>
+
+        <div class="card">
+            <div class="card-icon">⚙️</div>
+            <h2>Create Physics Puzzle</h2>
+            <button onclick="toggleModal('createPhysicsRoomModal')" class="btn">
+                Create Physics Room
             </button>
         </div>
 
@@ -66,7 +76,7 @@
                     <option value="collaborative">Collaborative</option>
                 </select>
                 
-                <button type="submit" class="btn" style="margin-top: 1rem;">Create Room</button>
+                <button type="submit" class="btn">Create Room</button>
             </form>
         </div>
     </div>
@@ -76,22 +86,41 @@
         <div class="modal-content">
             <span class="close" onclick="toggleModal('createSlidingRoomModal')">&times;</span>
             <h2>Create a New Sliding Room</h2>
-            <form id="createSlidingRoomForm" method="post" enctype="multipart/form-data" action="{% url 'create_room' %}">
+            <form id="createSlidingRoomForm" method="post" enctype="multipart/form-data" action="{% url 'sliding_puzzle:create_room' %}">
                 {% csrf_token %}
-                <label for="id_name">Room Name</label>
-                <input type="text" name="name" id="id_name" required>
                 
-                <label for="id_puzzle_image">Puzzle Image</label>
-                <input type="file" name="puzzle_image" id="id_puzzle_image" required>
-                
-                <label for="id_difficulty">Difficulty</label>
-                <select name="difficulty" id="id_difficulty" required>
+                <label for="roomName">Room Name</label>
+                <input type="text" name="roomName" id="roomName" required>
+            
+                <label for="puzzleImage">Puzzle Image</label>
+                <input type="file" name="puzzleImage" id="puzzleImage" required>
+            
+                <label for="difficulty">Difficulty</label>
+                <select name="difficulty" id="difficulty" required>
                     <option value="easy">Easy</option>
                     <option value="medium">Medium</option>
                     <option value="hard">Hard</option>
                 </select>
-                
-                <button type="submit" class="btn" style="margin-top: 1rem;">Create Room</button>
+            
+                <button type="submit" class="btn">Create Room</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Create Physics Room Modal -->
+    <div id="createPhysicsRoomModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="toggleModal('createPhysicsRoomModal')">&times;</span>
+            <h2>Create a New Physics Puzzle Room</h2>
+            <form id="createPhysicsRoomForm" method="post" enctype="multipart/form-data" action="{% url 'physics_puzzle:create_physics_room' %}">
+                {% csrf_token %}
+                <label for="id_name">Room Name</label>
+                <input type="text" name="name" id="id_name" required>
+
+                <label for="id_puzzle_image">Puzzle Image</label>
+                <input type="file" name="puzzle_image" id="id_puzzle_image" required>
+
+                <button type="submit" class="btn">Create Room</button>
             </form>
         </div>
     </div>
@@ -106,15 +135,39 @@
                 <label for="room_code">Room Code</label>
                 <input type="text" name="room_code" id="room_code" required>
                 
-                <button type="submit" class="btn" style="margin-top: 1rem;">Join Room</button>
+                <button type="submit" class="btn">Join Room</button>
             </form>
         </div>
     </div>
-    
-</main>
-
+</div>
 {% endblock %}
 
 {% block extra_scripts %}
+<script>
+function toggleModal(modalId) {
+    var modal = document.getElementById(modalId);
+    if (modal.classList.contains('show')) {
+        modal.classList.remove('show');
+    } else {
+        modal.classList.add('show');
+    }
+}
 
+// Close modal when clicking outside
+window.onclick = function(event) {
+    if (event.target.classList.contains('modal')) {
+        event.target.classList.remove('show');
+    }
+}
+
+// Close modal with Escape key
+document.addEventListener('keydown', function(event) {
+    if (event.key === 'Escape') {
+        var modals = document.querySelectorAll('.modal.show');
+        modals.forEach(function(modal) {
+            modal.classList.remove('show');
+        });
+    }
+});
+</script>
 {% endblock %}

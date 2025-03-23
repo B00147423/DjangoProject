@@ -12,5 +12,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('puzzles/', include('puzzles.urls')),
     path('jigsaw/', include('jigsaw_puzzle.urls')),  # Correctly routes to the jigsaw app
+    path('sliding_puzzle/', include('sliding_puzzle.urls', namespace='sliding_puzzle')),
     path('', views.base_page, name='root'),  # Base page view
+    path('physics/', include(('physics_puzzle.urls', 'physics_puzzle'), namespace='physics_puzzle')),  # Add namespace
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

@@ -1,0 +1,314 @@
+
+       /* General Styles */
+       :root {
+        --primary-color: #00ff9d;
+        --secondary-color: #4fc3f7;
+        --background-color: #0a0a1f;
+        --text-color: #ffffff;
+        --grid-background: rgba(255, 255, 255, 0.05);
+        --piece-background: #1a1a2e;
+        --piece-border: #4fc3f7;
+        --neon-glow: 0 0 10px var(--primary-color), 0 0 20px var(--primary-color), 0 0 30px var(--primary-color);
+        --header-gradient: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+        --chat-width: 300px;
+        --chat-height: 400px;
+    }
+
+    body, html {
+        margin: 0;
+        padding: 0;
+        height: 100vh;
+        width: 100vw;
+        font-family: 'Poppins', sans-serif;
+        background: var(--background-color);
+        color: var(--text-color);
+        overflow: hidden;
+        background: linear-gradient(135deg, #0a0a1f 0%, #1a1a2e 100%);
+    }
+
+    h1 {
+        text-align: center;
+        font-size: 36px;
+        margin: 20px 0;
+        color: var(--primary-color);
+        text-shadow: var(--neon-glow);
+    }
+
+    .leaderboard-container {
+        width: 90%;
+        max-width: 1200px;
+        margin: 20px auto;
+        max-height: 80vh;
+        background: var(--header-gradient);
+        padding: 20px;
+        border-radius: 15px;
+        border: 1px solid var(--secondary-color);
+        box-shadow: 0 0 20px rgba(79, 195, 247, 0.2);
+        overflow-y: auto;
+    }
+    
+    /* Tabs */
+    .tabs {
+        display: flex;
+        justify-content: center;
+        margin-bottom: 20px;
+    }
+
+    .tab {
+        padding: 10px 20px;
+        margin: 0 10px;
+        cursor: pointer;
+        border-radius: 8px;
+        background: rgba(79, 195, 247, 0.1);
+        border: 1px solid var(--secondary-color);
+        color: var(--text-color);
+        transition: all 0.3s ease;
+    }
+
+    .tab.active {
+        background: var(--primary-color);
+        color: var(--background-color);
+        border-color: var(--primary-color);
+        box-shadow: var(--neon-glow);
+    }
+
+    .tab:hover {
+        background: var(--secondary-color);
+        color: var(--background-color);
+    }
+
+    /* Filters */
+    .filters {
+        display: flex;
+        justify-content: center;
+        margin-bottom: 20px;
+    }
+
+    .filter {
+        padding: 8px 16px;
+        margin: 0 5px;
+        cursor: pointer;
+        border-radius: 8px;
+        background: rgba(79, 195, 247, 0.1);
+        border: 1px solid var(--secondary-color);
+        color: var(--text-color);
+        transition: all 0.3s ease;
+    }
+
+    .filter.active {
+        background: var(--primary-color);
+        color: var(--background-color);
+        border-color: var(--primary-color);
+        box-shadow: var(--neon-glow);
+    }
+
+    .filter:hover {
+        background: var(--secondary-color);
+        color: var(--background-color);
+        
+    }
+
+    /* Table Styles */
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 10px;
+    }
+
+    thead {
+        background-color: var(--secondary-color);
+        color: var(--background-color);
+    }
+
+    th, td {
+        padding: 12px;
+        text-align: center;
+        border-bottom: 1px solid var(--secondary-color);
+    }
+
+    th {
+        font-weight: 600;
+    }
+
+    tbody tr:hover {
+        background: rgba(79, 195, 247, 0.1);
+    }
+
+    .rank {
+        font-weight: bold;
+        color: var(--primary-color);
+    }
+
+    .no-data {
+        text-align: center;
+        font-size: 18px;
+        color: var(--text-color);
+        margin: 20px 0;
+    }
+
+
+
+    /* Difficulty Tabs */
+.difficulty-tabs {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 20px;
+    gap: 10px; /* Space between tabs */
+}
+
+.difficulty-tab {
+    padding: 12px 24px;
+    cursor: pointer;
+    border-radius: 8px;
+    background: rgba(79, 195, 247, 0.1);
+    border: 1px solid var(--secondary-color);
+    color: var(--text-color);
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 10px rgba(79, 195, 247, 0.2);
+}
+
+.difficulty-tab.active {
+    background: var(--primary-color);
+    color: var(--background-color);
+    border-color: var(--primary-color);
+    box-shadow: var(--neon-glow);
+    transform: translateY(-2px);
+}
+
+.difficulty-tab:hover {
+    background: var(--secondary-color);
+    color: var(--background-color);
+    transform: translateY(-2px);
+}
+
+/* Leaderboard Container */
+.leaderboard-container {
+    width: 90%;
+    max-width: 1200px;
+    margin: 20px auto;
+    max-height: 80vh;
+    background: var(--header-gradient);
+    padding: 20px;
+    border-radius: 15px;
+    border: 1px solid var(--secondary-color);
+    box-shadow: 0 0 20px rgba(79, 195, 247, 0.2);
+    overflow-y: auto;
+}
+
+/* Leaderboard Tables */
+.difficulty-leaderboard {
+    display: none; /* Hidden by default */
+    margin-top: 20px;
+}
+
+.difficulty-leaderboard.active {
+    display: block; /* Show active leaderboard */
+}
+
+.difficulty-leaderboard h2 {
+    font-size: 24px;
+    color: var(--primary-color);
+    text-shadow: var(--neon-glow);
+    margin-bottom: 15px;
+    text-align: center;
+}
+
+.difficulty-leaderboard h3 {
+    font-size: 20px;
+    color: var(--secondary-color);
+    margin-bottom: 10px;
+    text-align: center;
+}
+
+/* Table Styles */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+}
+
+thead {
+    background-color: var(--secondary-color);
+    color: var(--background-color);
+}
+
+th, td {
+    padding: 12px;
+    text-align: center;
+    border-bottom: 1px solid var(--secondary-color);
+}
+
+th {
+    font-weight: 600;
+}
+
+tbody tr:hover {
+    background: rgba(79, 195, 247, 0.1);
+}
+
+.rank {
+    font-weight: bold;
+    color: var(--primary-color);
+}
+
+.no-data {
+    text-align: center;
+    font-size: 18px;
+    color: var(--text-color);
+    margin: 20px 0;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .difficulty-tabs {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .difficulty-tab {
+        width: 80%;
+        text-align: center;
+    }
+
+    .leaderboard-container {
+        padding: 10px;
+    }
+
+    .difficulty-leaderboard h2 {
+        font-size: 20px;
+    }
+
+    .difficulty-leaderboard h3 {
+        font-size: 18px;
+    }
+
+    th, td {
+        padding: 8px;
+    }
+}
+
+@media (max-width: 480px) {
+    .difficulty-tab {
+        width: 100%;
+        padding: 10px;
+    }
+
+    .leaderboard-container {
+        width: 95%;
+    }
+
+    .difficulty-leaderboard h2 {
+        font-size: 18px;
+    }
+
+    .difficulty-leaderboard h3 {
+        font-size: 16px;
+    }
+
+    th, td {
+        padding: 6px;
+    }
+}

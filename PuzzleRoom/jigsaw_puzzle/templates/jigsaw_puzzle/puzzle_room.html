@@ -15,8 +15,31 @@
 <body>
     <div id="container">
         <div id="header">
-            <h1>{{ player1 }} VS {{ player2 }} Puzzle Room</h1>
+            <div class="header-content">
+                <h1>{{ player1 }} VS {{ player2 }} Puzzle Room</h1>
+                <div class="game-stats">
+                    <p><strong>⏳ Time:</strong> <span id="game-timer">00:00</span></p>
+                    <p><strong>🔢 {{ player1 }} Moves:</strong> <span id="player1-moves">0</span></p>
+                    <p><strong>🔢 {{ player2 }} Moves:</strong> <span id="player2-moves">0</span></p>
+                </div>
+            </div>
+            <button id="toggle-view" class="toggle-view">Show Only My Side</button>
         </div>
+
+        <div id="chat-container" class="chat-container">
+            <div id="chat-header" class="chat-header">
+                <span>Chat</span>
+                <button id="toggle-chat" class="toggle-chat">-</button>
+            </div>
+            <div id="chat-content">
+                <div id="chat-box" class="chat-box">
+                    <!-- Chat messages will be appended here -->
+                </div>
+                <input type="text" id="chat-input" placeholder="Type a message..." />
+                <button id="send-chat">Send</button>
+            </div>
+        </div>
+
         <div id="game-area">
             <!-- Player 1's container -->
             <div id="player1-container">
@@ -25,6 +48,7 @@
                 </div>
                 <div class="pieces-container" id="player1-pieces"></div>
             </div>
+            
             <!-- Player 2's container -->
             <div id="player2-container">
                 <div class="grid-container" id="player2-grid-container">
@@ -33,25 +57,82 @@
                 <div class="pieces-container" id="player2-pieces"></div>
             </div>
         </div>
-        <!-- Timer Div -->
-        <div id="countdown-timer"></div>
     </div>
 
     <!-- CSRF token and game settings -->
-    <script>
-        const csrfToken = '{{ csrf_token }}';
-        const difficulty = '{{ room.difficulty }}';
-        const playerRole = '{{ player_role }}';
-        const roomId = "{{ room.id }}";
-        const totalDuration = parseInt("{{ room.total_duration }}", 10);
+    <script id="room-data" type="application/json">
+        {
+            "csrfToken": "{{ csrf_token }}",
+            "playerRole": "{{ player_role }}",
+            "difficulty": "{{ room.difficulty }}",
+            "roomId": "{{ room.id }}",
+            "totalDuration": {{ room.total_duration }},
+            "username": "{{ user.username }}"
+        }
     </script>
 
     <!-- Puzzle data from Django -->
     <script id="puzzle-data" type="application/json">
         {{ pieces_data|safe }}
     </script>
+    <script id="chat-messages" type="application/json">
+        {{ chat_messages|safe }}
+    </script>
 
     <!-- Include the puzzle_room.js script after variables and puzzle data are defined -->
     <script src="{% static 'jigsaw_puzzle/js/puzzle_room.js' %}"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const toggleButton = document.getElementById('toggle-view');
+            const gameArea = document.getElementById('game-area');
+            const player1Container = document.getElementById('player1-container');
+            const player2Container = document.getElementById('player2-container');
+
+            // Read URL params to check the state (solo mode or split-screen)
+            const urlParams = new URLSearchParams(window.location.search);
+            let isSoloMode = urlParams.get('solo') === 'true'; // Read the 'solo' parameter
+
+            // Apply the initial layout based on URL param
+            if (isSoloMode) {
+                gameArea.classList.add('solo-mode');
+                player1Container.classList.remove('hidden');
+                player2Container.classList.add('hidden');
+                toggleButton.textContent = "Show Both Players"; // Update button text
+            } else {
+                gameArea.classList.remove('solo-mode');
+                player1Container.classList.remove('hidden');
+                player2Container.classList.remove('hidden');
+                toggleButton.textContent = "Show Only My Side"; // Update button text
+            }
+
+            // Toggle event listener
+            toggleButton.addEventListener('click', () => {
+                isSoloMode = !isSoloMode; // Toggle between solo and split-screen mode
+
+                // Update the URL without refreshing the page
+                const newUrl = new URL(window.location);
+                if (isSoloMode) {
+                    newUrl.searchParams.set('solo', 'true');
+                } else {
+                    newUrl.searchParams.delete('solo');
+                }
+                window.history.pushState({}, '', newUrl); // Update the URL in the address bar
+
+                // Apply the layout changes based on the toggle
+                if (isSoloMode) {
+                    gameArea.classList.add('solo-mode');
+                    player1Container.classList.remove('hidden');
+                    player2Container.classList.add('hidden');
+                    toggleButton.textContent = "Show Both Players"; // Update button text
+                } else {
+                    gameArea.classList.remove('solo-mode');
+                    player1Container.classList.remove('hidden');
+                    player2Container.classList.remove('hidden');
+                    toggleButton.textContent = "Show Only My Side"; // Update button text
+                }
+            });
+        });
+    </script>
 </body>
 </html>

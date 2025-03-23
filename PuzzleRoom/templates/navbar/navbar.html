@@ -5,221 +5,80 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PuzzleRoom</title>
+    <title>{% block title %}PuzzleRoom{% endblock %}</title>
 
     <!-- Box Icons and Font Awesome -->
     <link rel="stylesheet" href="https://unpkg.com/boxicons@latest/css/boxicons.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     
     <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
+    
+    <!-- Base Styles -->
+    <link rel="stylesheet" href="{% static 'css/navbar.css' %}">
     {% block extra_head %}{% endblock %}
-    <style>
-        :root {
-            --primary-color: #00ff00;
-            --secondary-color: #ff00ff;
-            --background-color: #111;
-            --text-color: #fff;
-            --navbar-bg: rgba(17, 17, 17, 0.8);
-        }
-
-        body {
-            font-family: 'Roboto', sans-serif;
-            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
-            color: var(--text-color);
-            margin: 0;
-            padding: 0;
-            min-height: 100vh;
-        }
-
-        .navbar {
-            background-color: var(--navbar-bg);
-            backdrop-filter: blur(10px);
-            padding: 1rem;
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            z-index: 1000;
-            box-shadow: 0 0 20px rgba(0, 255, 255, 0.3);
-        }
-
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 0 1rem;
-        }
-
-        .navbar-content {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .logo {
-            display: flex;
-            align-items: center;
-            font-family: 'Orbitron', sans-serif;
-            font-size: 1.5rem;
-            color: var(--primary-color);
-            text-decoration: none;
-            text-shadow: 0 0 10px var(--primary-color);
-            transition: text-shadow 0.3s ease;
-        }
-
-        .logo:hover {
-            text-shadow: 0 0 20px var(--primary-color);
-        }
-
-        .logo i {
-            margin-right: 0.5rem;
-        }
-
-        .nav-links {
-            display: flex;
-            gap: 1.5rem;
-        }
-
-        .nav-links a {
-            color: var(--text-color);
-            text-decoration: none;
-            font-size: 0.9rem;
-            transition: color 0.3s ease, text-shadow 0.3s ease;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-
-        .nav-links a:hover {
-            color: var(--secondary-color);
-            text-shadow: 0 0 10px var(--secondary-color);
-        }
-
-        .nav-links i {
-            margin-right: 0.5rem;
-        }
-
-        .user-welcome {
-            font-size: 0.9rem;
-            color: var(--primary-color);
-            text-shadow: 0 0 5px var(--primary-color);
-        }
-
-        .burger {
-            display: none;
-            cursor: pointer;
-            background: none;
-            border: none;
-            color: var(--text-color);
-            font-size: 1.5rem;
-            transition: color 0.3s ease;
-        }
-
-        .burger:hover {
-            color: var(--primary-color);
-        }
-
-        @media (max-width: 768px) {
-            .nav-links {
-                display: none;
-                position: absolute;
-                top: 100%;
-                left: 0;
-                right: 0;
-                background-color: var(--navbar-bg);
-                flex-direction: column;
-                padding: 1rem;
-                gap: 1rem;
-                box-shadow: 0 5px 15px rgba(0, 255, 255, 0.2);
-            }
-
-            .nav-links.active {
-                display: flex;
-            }
-
-            .burger {
-                display: block;
-            }
-
-            .user-welcome {
-                display: none;
-            }
-        }
-    </style>
 </head>
 
 <body>
-    <!-- Navbar -->
-    <nav class="navbar">
-        <div class="container">
-            <div class="navbar-content">
-                <!-- Logo and App Name -->
-                <a href="#" class="logo">
-                    <i class="fas fa-puzzle-piece"></i>
-                    <span>IoT Puzzle Room</span>
-                </a>
-
-                <!-- Navigation Links -->
-                <div class="nav-links" id="navLinks">
-                    <a href="{% url 'user:dashboard' %}" ><i class="fas fa-home"></i> Home</a>
-
-                    {% if user.is_authenticated %}
-                    <a href="{% url 'user:logout_page' %}"><i class='bx bxs-log-out'></i> Logout</a>
-                    <!--<a href="#"><i class="fas fa-users"></i> Join Room</a>-->
-                    <a href="#"><i class="fas fa-user-circle"></i> Profile</a>
-                    <a href="{% url 'user:settings' %}"><i class="fas fa-cog"></i> Settings</a>
-                    {% else %}
-                    <a href="{% url 'user:auth_page' %}"><i class='bx bxs-log-in'></i> Login</a>
-                    {% endif %}
-                </div>
-
-                <!-- User Welcome Message -->
-                <div class="user-welcome">
-                    {% if user.is_authenticated %}
-                        Welcome, <span class="font-bold">{{ user.username }}</span>
-                    {% else %}
-                        Welcome, Guest
-                    {% endif %}
-                </div>
-
-                <!-- Burger Menu -->
-                <button class="burger" id="burgerMenu">
-                    <i class="fas fa-bars"></i>
-                </button>
+    <!-- Sidebar Navigation -->
+    <nav class="sidebar" id="sidebar">
+        <div class="logo-content">
+            <div class="logo">
+                <i class="fas fa-puzzle-piece"></i>
+                <div class="logo-name">IoT Puzzle Room</div>
             </div>
+            <button type="button" id="sidebarToggle" aria-label="Toggle Sidebar">
+                <i class="fas fa-chevron-left"></i>
+            </button>
         </div>
+
+        <!-- Navigation Links -->
+        <ul class="nav-links">
+            <li class="nav-item" data-tooltip="Dashboard">
+                <a href="{% url 'user:dashboard' %}" {% if request.resolver_match.url_name == 'dashboard' %}class="active"{% endif %}>
+                    <i class="fas fa-home"></i>
+                    <span>Dashboard</span>
+                </a>
+            </li>
+
+            {% if user.is_authenticated %}
+            <li class="nav-item" data-tooltip="Profile">
+                <a href="#" class="user-profile">
+                    <i class="fas fa-user-circle"></i>
+                    <span>{{ user.username }}</span>
+                </a>
+            </li>
+            <li class="nav-item" data-tooltip="Settings">
+                <a href="{% url 'user:settings' %}" {% if request.resolver_match.url_name == 'settings' %}class="active"{% endif %}>
+                    <i class="fas fa-cog"></i>
+                    <span>Settings</span>
+                </a>
+            </li>
+            <li class="nav-item" data-tooltip="Logout">
+                <a href="{% url 'user:logout_page' %}">
+                    <i class='bx bxs-log-out'></i>
+                    <span>Logout</span>
+                </a>
+            </li>
+            {% else %}
+            <li class="nav-item" data-tooltip="Login">
+                <a href="{% url 'user:auth_page' %}">
+                    <i class='bx bxs-log-in'></i>
+                    <span>Login</span>
+                </a>
+            </li>
+            {% endif %}
+        </ul>
     </nav>
 
-    <!-- Placeholder for Page Content -->
-    {% block content %}
-    {% endblock %}
+    <!-- Main Content -->
+    <div class="main-content">
+        {% block content %}
+        {% endblock %}
+    </div>
 
-    {% block extra_scripts %}
-    {% endblock %}
-
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const burgerMenu = document.getElementById('burgerMenu');
-            const navLinks = document.getElementById('navLinks');
-
-            burgerMenu.addEventListener('click', function() {
-                navLinks.classList.toggle('active');
-            });
-
-            // Close menu when clicking outside
-            document.addEventListener('click', function(event) {
-                const isClickInsideNavbar = navLinks.contains(event.target) || burgerMenu.contains(event.target);
-                if (!isClickInsideNavbar && navLinks.classList.contains('active')) {
-                    navLinks.classList.remove('active');
-                }
-            });
-
-            // Close menu when window is resized to desktop view
-            window.addEventListener('resize', function() {
-                if (window.innerWidth > 768 && navLinks.classList.contains('active')) {
-                    navLinks.classList.remove('active');
-                }
-            });
-        });
-    </script>
+    <!-- Base Scripts -->
+    <script src="{% static 'js/navbar.js' %}"></script>
+    {% block extra_scripts %}{% endblock %}
 </body>
 </html>

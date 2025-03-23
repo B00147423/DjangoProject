@@ -30,6 +30,7 @@ INSTALLED_APPS = [
     'puzzles',
     'sliding_puzzle',
     'user.apps.UserConfig',
+    'physics_puzzle',
     
     # Core Django apps
     'django.contrib.admin',
@@ -53,6 +54,7 @@ INSTALLED_APPS = [
     'corsheaders',
     'rest_framework',
     'channels',
+    'tailwind',
 ]
 
 SOCIALACCOUNT_PROVIDERS = {
@@ -110,27 +112,27 @@ WSGI_APPLICATION = 'PuzzleRoom.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.postgresql',
-#         'NAME': 'puzzleRoom01',
-#         'USER': 'postgres',
-#         'PASSWORD': 'pass',
-#         'HOST': '127.0.0.1',
-#         'PORT': '5432',
-#     }
-# }
-
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': os.getenv('puzzleRoom'),
-        'USER': os.getenv('puzzle_room01'),
-        'PASSWORD': os.getenv('oFFOdaoQlS6ENP7nyUrhqddqP3TL4ZXJ'),
-        'HOST': os.getenv('postgresql://puzzle_rooom01:oFFOdaoQlS6ENP7nyUrhqddqP3TL4ZXJ@dpg-ctddhpjqf0us73bp4fb0-a/puzzle_room01'),
-        'PORT': os.getenv('5432'),
+        'NAME': 'puzzleRoom01',
+        'USER': 'postgres',
+        'PASSWORD': 'pass',
+        'HOST': '127.0.0.1',
+        'PORT': '5432',
     }
 }
+
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.postgresql',
+#         'NAME': os.getenv('puzzleRoom'),
+#         'USER': os.getenv('puzzle_room01'),
+#         'PASSWORD': os.getenv('oFFOdaoQlS6ENP7nyUrhqddqP3TL4ZXJ'),
+#         'HOST': os.getenv('postgresql://puzzle_rooom01:oFFOdaoQlS6ENP7nyUrhqddqP3TL4ZXJ@dpg-ctddhpjqf0us73bp4fb0-a/puzzle_room01'),
+#         'PORT': os.getenv('5432'),
+#     }
+# }
 
 
 #DATABASES = {
@@ -289,3 +291,28 @@ LOGIN_URL = '/user/auth/'
 
 USE_I18N = True
 USE_L10N = True
+
+# Cache configuration
+CACHES = {
+    'default': {
+        'BACKEND': 'django_redis.cache.RedisCache',
+        'LOCATION': 'redis://127.0.0.1:6379/1',
+        'OPTIONS': {
+            'CLIENT_CLASS': 'django_redis.client.DefaultClient',
+        }
+    }
+}
+
+# Use Redis for session cache
+SESSION_ENGINE = 'django.contrib.sessions.backends.cache'
+SESSION_CACHE_ALIAS = 'default'
+
+# Channel layer configuration
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels_redis.core.RedisChannelLayer',
+        'CONFIG': {
+            'hosts': [('127.0.0.1', 6379)],
+        },
+    },
+}

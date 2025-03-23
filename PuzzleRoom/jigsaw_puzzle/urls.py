@@ -15,5 +15,7 @@ urlpatterns = [
     path('get_pieces/', views.get_pieces, name='get_pieces'),
     path('update_piece_position/', views.update_piece_position, name='update_piece_position'),  # Ensure this exists
     path('get_remaining_time/<int:room_id>/', views.get_remaining_time, name='get_remaining_time'),
+    path('completed_puzzles/', views.completed_puzzles, name='completed_puzzles'), 
+    path('leaderboard/', views.leaderboard, name='leaderboard'),
 ]
 

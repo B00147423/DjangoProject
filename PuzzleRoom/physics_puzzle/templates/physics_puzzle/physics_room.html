@@ -1,0 +1,52 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gravity Drop Build: {{ room.name }}</title>
+    
+   
+</head>
+<body>
+    <h1>Stack the Falling Pieces!</h1>
+    <canvas id="puzzleCanvas"></canvas>
+
+    <script id="puzzle-data" type="application/json">
+        {{ pieces_data|safe }}
+    </script>
+</body>
+</html>
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gravity Drop Build: {{ room.name }}</title>
+    
+     <script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.17.1/matter.min.js"></script>
+     <script src="{% static 'physics_puzzle/js/physics_room.js' %}" defer></script>
+    <style>
+        body {
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            background-color: #f0f0f0;
+        }
+        canvas {
+            border: 1px solid #000;
+        }
+    </style>
+</head>
+<body>
+    <h1>Stack the Falling Pieces!</h1>
+    <canvas id="puzzleCanvas" width="800" height="600"></canvas>
+
+    <script id="puzzle-data" type="application/json">
+        {{ pieces_data|safe }}
+    </script>

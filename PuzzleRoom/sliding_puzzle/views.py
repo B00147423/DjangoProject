@@ -20,6 +20,7 @@ import random
 from django.core.files.storage import default_storage
 from PIL import Image
 import os
+from datetime import datetime
 
 @login_required
 def room_full(request):
@@ -31,42 +32,47 @@ def create_room(request):
         room_name = request.POST.get('roomName')
         difficulty = request.POST.get('difficulty')
 
-        # Ensure image is uploaded
         if 'puzzleImage' not in request.FILES:
             return JsonResponse({'error': 'No image uploaded'}, status=400)
 
         uploaded_image = request.FILES['puzzleImage']
-
-        # Save the uploaded image
         image_path = default_storage.save(f'puzzles/{uploaded_image.name}', uploaded_image)
 
-        # Room creation logic
-        room_id = str(uuid.uuid4())
-        pieces = [i for i in range(1, 16)] + ['empty']
-        random.shuffle(pieces)  # Shuffle pieces for puzzle
+        # Set grid size based on difficulty
+        grid_sizes = {'easy': 3, 'medium': 4, 'hard': 5}
+        grid_size = grid_sizes.get(difficulty.lower(), 4)  # Default to 4 if difficulty not found
+        pieces = [i for i in range(1, grid_size * grid_size)] + ['empty']
+        random.shuffle(pieces)
 
         puzzle = Puzzle.objects.create(
             title=f"Sliding Puzzle {str(uuid.uuid4())[:8]}",
-            rows=4,
-            cols=4,
+            rows=grid_size,
+            cols=grid_size,
             difficulty=difficulty,
         )
 
+        # Create initial state with start_time
+        initial_state = {
+            'pieces': pieces,
+            'grid_size': grid_size,
+            'move_count': 0,
+            'start_time': int(datetime.now().timestamp() * 1000),  # Current time in milliseconds
+            'is_completed': False,
+            'best_time': None,
+            'best_moves': None,
+            'games_completed': 0
+        }
+
         new_room = PuzzleRoom.objects.create(
-            room_id=room_id,
+            room_id=str(uuid.uuid4()),
             name=room_name,
             puzzle=puzzle,
-            state={'pieces': pieces},
+            state=initial_state
         )
 
-        # Split the uploaded image into tiles
         split_image_and_create_pieces(new_room, image_path, puzzle)
 
-        # Generate invite link
-        invite_link = f"{request.build_absolute_uri('/')}sliding_puzzle/invite/{new_room.invite_token}/"
-        return JsonResponse({'room_id': room_id, 'invite_link': invite_link, 'status': 'success'})
-
-    return render(request, 'sliding_puzzle/create_room.html')
+        return redirect('sliding_puzzle:room_detail', room_id=new_room.room_id)
 
 def split_image_and_create_pieces(room, image_path, puzzle):
     directory_path = os.path.join(settings.MEDIA_ROOT, f'puzzles/{room.room_id}')
@@ -76,13 +82,14 @@ def split_image_and_create_pieces(room, image_path, puzzle):
     # Open the uploaded image
     image = Image.open(os.path.join(settings.MEDIA_ROOT, image_path))
 
+    grid_size = puzzle.rows  # Use the grid size from the puzzle model
     img_width, img_height = image.size
-    tile_width = img_width // 4
-    tile_height = img_height // 4
+    tile_width = img_width // grid_size
+    tile_height = img_height // grid_size
 
-    for row in range(4):
-        for col in range(4):
-            if row == 3 and col == 3:
+    for row in range(grid_size):
+        for col in range(grid_size):
+            if row == grid_size - 1 and col == grid_size - 1:
                 continue  # Skip last tile for empty space
 
             left = col * tile_width
@@ -98,7 +105,7 @@ def split_image_and_create_pieces(room, image_path, puzzle):
             PuzzlePiece.objects.create(
                 puzzle=puzzle,
                 room=room,
-                number=row * 4 + col + 1,
+                number=row * grid_size + col + 1,
                 current_row=row,
                 current_col=col,
                 is_correct=False,
@@ -109,13 +116,22 @@ def room_detail(request, room_id):
     room = get_object_or_404(PuzzleRoom, room_id=room_id)
     puzzle_pieces = PuzzlePiece.objects.filter(room=room)
 
-    # Get the saved state from the room (if exists)
-    saved_state = room.state.get('pieces')
+    # Get the complete saved state from the room
+    puzzle_state = {
+        'pieces': room.state.get('pieces', []),
+        'grid_size': room.puzzle.rows,
+        'move_count': room.state.get('move_count', 0),
+        'best_time': room.state.get('best_time'),
+        'best_moves': room.state.get('best_moves'),
+        'games_completed': room.state.get('games_completed', 0),
+        'is_completed': room.state.get('is_completed', False),
+        'start_time': room.state.get('start_time')
+    }
 
     context = {
         'room': room,
         'puzzle_pieces': puzzle_pieces,
-        'puzzle_state': json.dumps(saved_state),
+        'puzzle_state': json.dumps(puzzle_state),
         'MEDIA_URL': settings.MEDIA_URL,
     }
 
@@ -125,20 +141,46 @@ def save_puzzle_state(request, room_id):
     if request.method == 'POST':
         room = get_object_or_404(PuzzleRoom, room_id=room_id)
         data = json.loads(request.body)
-        puzzle_state = data.get('puzzleState', [])  # Safely get puzzleState
+        puzzle_state = data.get('puzzleState', [])
+        grid_size = room.puzzle.rows
 
+        # Update piece positions
         for index, tile_number in enumerate(puzzle_state):
-            if tile_number != 'empty':  # Ensure we're not processing the empty tile
+            if tile_number != 'empty':
                 try:
                     piece = PuzzlePiece.objects.get(puzzle=room.puzzle, number=tile_number)
-                    piece.current_col = index % 4
-                    piece.current_row = index // 4
-                    piece.is_correct = (piece.current_col == index % 4 and piece.current_row == index // 4)
+                    piece.current_col = index % grid_size
+                    piece.current_row = index // grid_size
+                    piece.is_correct = (piece.current_col == (tile_number - 1) % grid_size and 
+                                      piece.current_row == (tile_number - 1) // grid_size)
                     piece.save()
                 except PuzzlePiece.DoesNotExist:
                     return JsonResponse({'error': f"PuzzlePiece {tile_number} not found"}, status=400)
 
-        room.state['pieces'] = puzzle_state
+        # Update room state with all game data
+        current_state = room.state
+        current_state.update({
+            'pieces': puzzle_state,
+            'grid_size': grid_size,
+            'move_count': data.get('moveCount', 0),
+            'current_time': data.get('current_time', 0),
+            'is_completed': data.get('is_completed', False),
+            'start_time': data.get('start_time')
+        })
+
+        # Update best scores only if they're better than current ones
+        if data.get('best_time') is not None:
+            if current_state.get('best_time') is None or data['best_time'] < current_state['best_time']:
+                current_state['best_time'] = data['best_time']
+
+        if data.get('best_moves') is not None:
+            if current_state.get('best_moves') is None or data['best_moves'] < current_state['best_moves']:
+                current_state['best_moves'] = data['best_moves']
+
+        # Update games completed
+        current_state['games_completed'] = data.get('games_completed', current_state.get('games_completed', 0))
+
+        room.state = current_state
         room.save()
 
         return JsonResponse({'status': 'success'})

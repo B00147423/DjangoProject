@@ -1,0 +1,30 @@
+
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Completed Puzzles</title>
+    <script src="{% static 'jigsaw_puzzle/js/completed_puzzles.js' %}" defer></script>
+</head>
+<body>
+    <h1>Completed Puzzles</h1>
+    <ul>
+        {% for room in completed_rooms %}
+            <li>
+                <strong>{{ room.name }}</strong> - Completed on {{ room.created_at|date:"F d, Y" }}
+                <br>
+                Players: 
+                {% if room.player1 and room.player2 %}
+                    {{ room.player1.username }} & {{ room.player2.username }}
+                {% elif room.player1 %}
+                    {{ room.player1.username }} (Single Player)
+                {% else %}
+                    Unknown Players
+                {% endif %}
+            </li>
+        {% endfor %}
+    </ul>
+</body>
+</html>
