@@ -88,6 +88,20 @@ document.addEventListener('DOMContentLoaded', () => {
     const socket = new WebSocket(`ws://${window.location.host}/ws/puzzle/${roomId}/`);
     let isWebSocketConnected = false;
 
+    socket.onopen = function () {
+        console.log('WebSocket connection established');
+        isWebSocketConnected = true;
+    };
+
+    socket.onclose = function () {
+        console.log('WebSocket connection closed');
+        isWebSocketConnected = false;
+    };
+
+    socket.onerror = function(error) {
+        console.error('WebSocket error:', error);
+    };
+
     // Chat elements
     const chatContainer = document.querySelector('.chat-container');
     const chatBox = document.getElementById('chat-box');
@@ -154,16 +168,6 @@ document.addEventListener('DOMContentLoaded', () => {
             }, 1000);
         }
     }
-
-    socket.onopen = function () {
-        console.log('WebSocket connection established');
-        isWebSocketConnected = true;
-    };
-
-    socket.onclose = function () {
-        console.log('WebSocket connection closed');
-        isWebSocketConnected = false;
-    };
 
     socket.onmessage = function (event) {
         const data = JSON.parse(event.data);

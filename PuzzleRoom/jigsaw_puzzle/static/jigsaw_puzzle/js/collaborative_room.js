@@ -19,36 +19,43 @@ document.addEventListener("DOMContentLoaded", () => {
     const piecesData = JSON.parse(puzzleDataElement.textContent);
     const initialMessages = JSON.parse(chatMessagesElement.textContent);
 
-    // Grid and puzzle setup
-    const gridSizes = { easy: 4, medium: 6, hard: 8 };
-    
-    // Get container width and calculate responsive grid size
-    const container = document.getElementById("grid-container");
+    // EXACT MATCH from puzzle_room.js for grid calculations
+    const container = document.getElementById('grid-container').parentElement;
     const containerWidth = container.clientWidth;
-    const containerHeight = container.clientHeight;
-    const containerSize = Math.min(containerWidth, containerHeight) * 0.9; // Use 90% of the smaller dimension
-    
-    const baseGridSizes = { 
-        easy: containerSize / 4,    // Responsive size for easy
-        medium: containerSize / 6,   // Responsive size for medium
-        hard: containerSize / 8      // Responsive size for hard
-    };
-    
-    const gridRows = gridSizes[difficulty];
-    const gridCols = gridSizes[difficulty];
-    const baseGridSize = baseGridSizes[difficulty];
+    const containerSize = Math.min(400, containerWidth * 0.8); // Match puzzle_room.js calculation
+
+    let gridRows, gridCols;
+    if (difficulty === 'easy') {
+        gridRows = 4;
+        gridCols = 4;
+        baseGridSize = containerSize / 4;  // Responsive size for easy
+    } else if (difficulty === 'medium') {
+        gridRows = 6;
+        gridCols = 6;
+        baseGridSize = containerSize / 6;   // Responsive size for medium
+    } else if (difficulty === 'hard') {
+        gridRows = 8;
+        gridCols = 8;
+        baseGridSize = containerSize / 8;   // Responsive size for hard
+    } else {
+        // Default
+        gridRows = 4;
+        gridCols = 4;
+        baseGridSize = containerSize / 4;  // Default to easy
+    }
 
     // Set up grid container with responsive size
-    container.style.setProperty("--grid-cols", gridCols);
-    container.style.setProperty("--grid-rows", gridRows);
-    container.style.width = `${gridCols * baseGridSize}px`;
-    container.style.height = `${gridRows * baseGridSize}px`;
+    const containerElement = document.getElementById("grid-container");
+    containerElement.style.setProperty("--grid-cols", gridCols);
+    containerElement.style.setProperty("--grid-rows", gridRows);
+    containerElement.style.width = `${baseGridSize * gridCols}px`;
+    containerElement.style.height = `${baseGridSize * gridRows}px`;
 
-    // Initialize Konva stage and layer
+    // Initialize Konva stage with the exact same dimensions
     stage = new Konva.Stage({
         container: 'grid-container',
-        width: gridCols * baseGridSize,
-        height: gridRows * baseGridSize,
+        width: baseGridSize * gridCols,
+        height: baseGridSize * gridRows,
     });
 
     layer = new Konva.Layer();
@@ -101,10 +108,19 @@ document.addEventListener("DOMContentLoaded", () => {
         socket = new WebSocket(`ws://${window.location.host}/ws/puzzle/${roomId}/`);
     
         socket.onopen = () => {
-            console.log("✅ WebSocket connected.");
+            console.log("✅ WebSocket connected");
             startGameTimer();
         };
     
+        socket.onclose = () => {
+            console.error("⚠️ WebSocket disconnected. Reconnecting...");
+            setTimeout(initializeWebSocket, 1000); // Retry connection every 1 second
+        };
+    
+        socket.onerror = (error) => {
+            console.error("❌ WebSocket error:", error);
+        };
+
         socket.onmessage = (event) => {
             const data = JSON.parse(event.data);
             console.log("🔄 Message received:", data);
@@ -188,15 +204,6 @@ document.addEventListener("DOMContentLoaded", () => {
                 // Ensure completion time and moves taken are displayed
                 showCompletionModal(data.completion_time, data.moves_taken);
             }
-        };
-    
-        socket.onclose = () => {
-            console.error("⚠️ WebSocket disconnected. Reconnecting...");
-            setTimeout(initializeWebSocket, 1000); // Retry connection every 1 second
-        };
-    
-        socket.onerror = (error) => {
-            console.error("❌ WebSocket error:", error);
         };
     }
 
