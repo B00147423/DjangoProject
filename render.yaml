@@ -2,7 +2,7 @@ services:
   - type: web
     name: puzzleroom
     runtime: python
-    rootDir: DjangoProject/PuzzleRoom
+    rootDir: PuzzleRoom
     buildCommand: |
       pip install -r requirements.txt
       python manage.py migrate
