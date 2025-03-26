@@ -195,13 +195,14 @@ STATICFILES_DIRS = [
 # Where static files will be collected (used in production).
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
-CSRF_TRUSTED_ORIGINS = ['http://localhost:3000', 
-                        'https://your-production-domain.com'
+CSRF_TRUSTED_ORIGINS = [
+    "http://localhost:3000",
+    "https://djangoproject-0bzc.onrender.com"
 ]
 CORS_ALLOWED_ORIGINS = [
-    'http://localhost:3000',  # your React app
+    'http://localhost:3000',
+    'https://djangoproject-0bzc.onrender.com',
 ]
-
 CORS_ALLOW_METHODS = [
     'DELETE',
     'GET',
