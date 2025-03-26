@@ -1,5 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
     let isWebSocketConnected = false; // 🔥 Move this line here!
+
     function updateMoveCounters(player1Moves, player2Moves) {
         const player1Element = document.getElementById("player1-moves");
         const player2Element = document.getElementById("player2-moves");
@@ -85,7 +86,9 @@ document.addEventListener('DOMContentLoaded', () => {
     createGrid(player2Stage, player2Layer, 'player2');
 
     // WebSocket setup
-    const socket = new WebSocket(`wss://${window.location.host}/ws/puzzle/${roomId}/`);
+    const protocol = window.location.protocol === 'https:' ? 'wss' : 'ws';
+    const socket = new WebSocket(`${protocol}://${window.location.host}/ws/puzzle/${roomId}/`);
+ 
     socket.onopen = function () {
         console.log('WebSocket connection established');
         isWebSocketConnected = true;
@@ -415,7 +418,7 @@ document.addEventListener('DOMContentLoaded', () => {
         .then(response => response.json())
         .then(data => {
             if (data.remaining_time < totalDuration) {
-                startCountdown(data.remaining_time);
+                startCountup(totalDuration - data.remaining_time);
             }
         });
 
@@ -433,7 +436,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     const pieceElement = document.createElement('div');
                     pieceElement.classList.add('piece');
                     pieceElement.dataset.pieceId = piece.id;
-                    pieceElement.style.backgroundImage = `url('${piece.image_url}')`;
+                    pieceElement.style.backgroundImage = `url('${window.location.origin}${piece.image_url}')`;
         
                     // Positioning logic to prevent stacking
                     pieceElement.style.position = "absolute";
@@ -502,7 +505,7 @@ document.addEventListener('DOMContentLoaded', () => {
             window.addEventListener('resize', () => {
                 Object.entries(placedPieces).forEach(([pieceId, pieceData]) => {
                     const currentLayer = playerRole === 'player1' ? player1Layer : player2Layer;
-                    addPieceToLayer(currentLayer, null, pieceData.x, pieceData.y, pieceId, pieceData.imageUrl);
+                    updatePieceOnGrid(currentLayer, pieceId, pieceData.x, pieceData.y, pieceData.imageUrl);
                 });
             });
         }

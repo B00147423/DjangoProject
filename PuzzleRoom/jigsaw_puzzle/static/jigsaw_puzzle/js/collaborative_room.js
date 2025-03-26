@@ -105,7 +105,8 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     function initializeWebSocket() {
-        socket = new WebSocket(`ws://${window.location.host}/ws/puzzle/${roomId}/`);
+        const protocol = window.location.protocol === 'https:' ? 'wss' : 'ws';
+        socket = new WebSocket(`${protocol}://${window.location.host}/ws/puzzle/${roomId}/`);
     
         socket.onopen = () => {
             console.log("✅ WebSocket connected");
