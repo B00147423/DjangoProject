@@ -1,5 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
-
+    let isWebSocketConnected = false; // 🔥 Move this line here!
     function updateMoveCounters(player1Moves, player2Moves) {
         const player1Element = document.getElementById("player1-moves");
         const player2Element = document.getElementById("player2-moves");
@@ -85,9 +85,7 @@ document.addEventListener('DOMContentLoaded', () => {
     createGrid(player2Stage, player2Layer, 'player2');
 
     // WebSocket setup
-    const socket = new WebSocket(`ws://${window.location.host}/ws/puzzle/${roomId}/`);
-    let isWebSocketConnected = false;
-
+    const socket = new WebSocket(`wss://${window.location.host}/ws/puzzle/${roomId}/`);
     socket.onopen = function () {
         console.log('WebSocket connection established');
         isWebSocketConnected = true;
