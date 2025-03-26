@@ -3,6 +3,7 @@ from datetime import timedelta
 import os
 from pathlib import Path
 from dotenv import load_dotenv
+import dj_database_url
 load_dotenv() 
 # Optional: Customize message tags (optional, for CSS styling)
 from django.contrib.messages import constants as message_constants
@@ -112,15 +113,19 @@ WSGI_APPLICATION = 'PuzzleRoom.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
+#DATABASES = {
+    #'default': {
+       # 'ENGINE': 'django.db.backends.postgresql',
+      #  'NAME': 'puzzleRoom01',
+     #   'USER': 'postgres',
+    #    'PASSWORD': 'pass',
+   #     'HOST': '127.0.0.1',
+  #      'PORT': '5432',
+ #   }
+#}
+
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'puzzleRoom01',
-        'USER': 'postgres',
-        'PASSWORD': 'pass',
-        'HOST': '127.0.0.1',
-        'PORT': '5432',
-    }
+    'default': dj_database_url.config(default=os.environ.get('DATABASE_URL'))
 }
 
 # DATABASES = {
