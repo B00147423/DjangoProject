@@ -5,8 +5,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const redirectUrl = context.redirect_url;
 
     // Initialize WebSocket
-    const socket = new WebSocket(`ws://${window.location.host}/ws/puzzle/${roomId}/`);
-
+    const protocol = window.location.protocol === 'https:' ? 'wss' : 'ws';
+    const socket = new WebSocket(`${protocol}://${window.location.host}/ws/puzzle/${roomId}/`);
     let isReady = false;
 
     socket.onmessage = function (event) {
