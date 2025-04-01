@@ -216,7 +216,7 @@ CSRF_TRUSTED_ORIGINS = [
 
 CORS_ALLOWED_ORIGINS = [
     'http://localhost:3000',
-    'https://djangoproject-0bzc.onrender.com',
+    'https://djangoproject-0bzc.onrender.com'
     ''
 ]
 CORS_ALLOW_METHODS = [
