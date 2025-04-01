@@ -113,16 +113,16 @@ WSGI_APPLICATION = 'PuzzleRoom.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'puzzleRoom01',
-        'USER': 'postgres',
-        'PASSWORD': 'pass',
-        'HOST': '127.0.0.1',
-        'PORT': '5432',
-    }
-}
+#DATABASES = {
+#    'default': {
+#        'ENGINE': 'django.db.backends.postgresql',
+#        'NAME': 'puzzleRoom01',
+#        'USER': 'postgres',
+#        'PASSWORD': 'pass',
+#        'HOST': '127.0.0.1',
+#        'PORT': '5432',
+#    }
+#}
 
 #DATABASES = {
     #'default': dj_database_url.config(default=os.environ.get('DATABASE_URL'))
@@ -152,6 +152,20 @@ DATABASES = {
 #}
 
 
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'postgres',  # Database name, it's usually 'postgres' in Supabase
+        'USER': os.getenv('DB_USER'),  # Fetch user from environment, default 'postgres'
+        'PASSWORD': os.getenv('DB_PASSWORD'),  # Fetch password from environment
+        'HOST': os.getenv('DB_HOST'),  # Your Supabase host
+        'PORT': os.getenv('DB_PORT'),  # Default port for PostgreSQL
+        'OPTIONS': {
+            'sslmode': 'require',  # Ensure SSL is enabled
+            'connect_timeout': 40,  # Increase timeout for connection
+        },
+    }
+}
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
 
