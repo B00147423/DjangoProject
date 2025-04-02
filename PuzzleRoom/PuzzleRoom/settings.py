@@ -4,6 +4,7 @@ import os
 from pathlib import Path
 from dotenv import load_dotenv
 import dj_database_url
+from decouple import config
 load_dotenv() 
 # Optional: Customize message tags (optional, for CSS styling)
 from django.contrib.messages import constants as message_constants
@@ -49,6 +50,9 @@ INSTALLED_APPS = [
     # OAuth providers
     'allauth.socialaccount.providers.github',
     'allauth.socialaccount.providers.google',
+    
+    'cloudinary',
+    'cloudinary_storage',
 
     # Other apps
     'oauth2_provider',
@@ -284,6 +288,14 @@ logging.basicConfig(
 )
 SOCIALACCOUNT_AUTO_SIGNUP = True
 # This will show detailed logs for debugging purposes.
+
+CLOUDINARY_STORAGE = {
+    'CLOUD_NAME': config('CLOUDINARY_CLOUD_NAME'),
+    'API_KEY': config('CLOUDINARY_API_KEY'),
+    'API_SECRET': config('CLOUDINARY_API_SECRET'),
+}
+
+DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
 
 
 MESSAGE_TAGS = {
