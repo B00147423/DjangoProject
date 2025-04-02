@@ -422,6 +422,13 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
 
+        function safeImageUrl(url) {
+            if (url.startsWith("http")) {
+                return url;
+            }
+            return `/media/${url}`;
+        }
+
         function loadPuzzlePieces(piecesContainerId, piecesData) {
             const piecesContainer = document.getElementById(piecesContainerId);
             const containerRect = piecesContainer.getBoundingClientRect();
@@ -436,7 +443,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     const pieceElement = document.createElement('div');
                     pieceElement.classList.add('piece');
                     pieceElement.dataset.pieceId = piece.id;
-                    pieceElement.style.backgroundImage = `url('${window.location.origin}${piece.image_url}')`;
+                    pieceElement.style.backgroundImage = `url('${safeImageUrl(piece.image_url)}')`;
         
                     // Positioning logic to prevent stacking
                     pieceElement.style.position = "absolute";
