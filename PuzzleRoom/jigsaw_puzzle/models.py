@@ -108,7 +108,7 @@ class JigsawPuzzleRoom(models.Model):
 
 class JigsawPuzzlePiece(models.Model):
     room = models.ForeignKey(JigsawPuzzleRoom, on_delete=models.CASCADE)
-    image_piece = models.ImageField(blank=True, null=True)  # 👈 Set upload_to='' to disable default storage
+    image_piece = models.ImageField(max_length=500, blank=True, null=True)
     x_position = models.IntegerField(null=True, blank=True)
     y_position = models.IntegerField(null=True, blank=True)
     initial_x = models.IntegerField(null=False, blank=False, default=0)
