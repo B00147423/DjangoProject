@@ -337,11 +337,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
     initializeWebSocket();
     function safeImageUrl(url) {
-        if (url.startsWith("http")) {
-            return url;
+        if (url.startsWith("http") || url.startsWith("https")) {
+            return url;  // It's a full Cloudinary URL — use it directly
         }
-        return `/media/${url}`;
+        return `/media/${url}`;  // It's a relative local path
     }
+    
     function handlePieceRemove(pieceId) {
         // Remove the piece from the grid for everyone
         removePieceFromGrid(pieceId);
