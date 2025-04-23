@@ -19,6 +19,7 @@ class PuzzlePiece(models.Model):
     current_col = models.IntegerField()
     current_row = models.IntegerField()
     is_correct = models.BooleanField(default=False)
+    image = models.ImageField(upload_to='puzzles/pieces/', null=True, blank=True)  # ✅ Add this line
 
     def __str__(self):
         return f"Tile {self.number} in Room {self.room.name} (Correct: {self.is_correct})"

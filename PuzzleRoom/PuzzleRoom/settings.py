@@ -4,7 +4,6 @@ import os
 from pathlib import Path
 from dotenv import load_dotenv
 import dj_database_url
-from decouple import config
 load_dotenv() 
 # Optional: Customize message tags (optional, for CSS styling)
 from django.contrib.messages import constants as message_constants
@@ -20,7 +19,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-)ytjp2gmp_r3psh*=8swqdck-lvhn(4h5)5iiblap16c5ye9jh'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
 ALLOWED_HOSTS = ["*"]
 
@@ -51,9 +50,6 @@ INSTALLED_APPS = [
     'allauth.socialaccount.providers.github',
     'allauth.socialaccount.providers.google',
     
-    'cloudinary',
-    'cloudinary_storage',
-
     # Other apps
     'oauth2_provider',
     'corsheaders',
@@ -117,16 +113,16 @@ WSGI_APPLICATION = 'PuzzleRoom.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
-#DATABASES = {
-#    'default': {
-#        'ENGINE': 'django.db.backends.postgresql',
-#        'NAME': 'puzzleRoom01',
-#        'USER': 'postgres',
-#        'PASSWORD': 'pass',
-#        'HOST': '127.0.0.1',
-#        'PORT': '5432',
-#    }
-#}
+DATABASES = {
+   'default': {
+       'ENGINE': 'django.db.backends.postgresql',
+       'NAME': 'puzzleRoom01',
+       'USER': 'postgres',
+       'PASSWORD': 'pass',
+       'HOST': '127.0.0.1',
+       'PORT': '5432',
+   }
+}
 
 #DATABASES = {
     #'default': dj_database_url.config(default=os.environ.get('DATABASE_URL'))
@@ -156,20 +152,20 @@ WSGI_APPLICATION = 'PuzzleRoom.wsgi.application'
 #}
 
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'postgres',  # Database name, it's usually 'postgres' in Supabase
-        'USER': os.getenv('DB_USER'),  # Fetch user from environment, default 'postgres'
-        'PASSWORD': os.getenv('DB_PASSWORD'),  # Fetch password from environment
-        'HOST': os.getenv('DB_HOST'),  # Your Supabase host
-        'PORT': os.getenv('DB_PORT'),  # Default port for PostgreSQL
-        'OPTIONS': {
-            'sslmode': 'require',  # Ensure SSL is enabled
-            'connect_timeout': 40,  # Increase timeout for connection
-        },
-    }
-}
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.postgresql',
+#         'NAME': 'postgres',  # Database name, it's usually 'postgres' in Supabase
+#         'USER': os.getenv('DB_USER'),  # Fetch user from environment, default 'postgres'
+#         'PASSWORD': os.getenv('DB_PASSWORD'),  # Fetch password from environment
+#         'HOST': os.getenv('DB_HOST'),  # Your Supabase host
+#         'PORT': os.getenv('DB_PORT'),  # Default port for PostgreSQL
+#         'OPTIONS': {
+#             'sslmode': 'require',  # Ensure SSL is enabled
+#             'connect_timeout': 40,  # Increase timeout for connection
+#         },
+#     }
+# }
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
 
@@ -202,16 +198,32 @@ USE_TZ = True
 
 
 # Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/5.1/howto/static-files/
-
 STATIC_URL = '/static/'
 
 STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, 'static'),  # This should point to the folder where your 'css' and 'js' directories are located.
+    os.path.join(BASE_DIR, 'static'),
 ]
 
-# Where static files will be collected (used in production).
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+
+# Media files
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+# Remove Cloudinary configuration
+DEFAULT_FILE_STORAGE = 'django.core.files.storage.FileSystemStorage'
+
+# Debug should be True for development
+DEBUG = True
+
+# Configure WhiteNoise
+#STATICFILES_STORAGE = 'whitenoise.storage.CompressedStaticFilesStorage'
+
+# Add static finders
+STATICFILES_FINDERS = [
+    'django.contrib.staticfiles.finders.FileSystemFinder',
+    'django.contrib.staticfiles.finders.AppDirectoriesFinder',
+]
 
 CSRF_TRUSTED_ORIGINS = [
     "http://localhost:3000",
@@ -274,10 +286,6 @@ CHANNEL_LAYERS = {
 }
 
 
-MEDIA_URL = '/media/'
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
-
-
 LOGIN_REDIRECT_URL = '/user/dashboard/'
 
 LOGOUT_REDIRECT_URL = '/'
@@ -288,15 +296,6 @@ logging.basicConfig(
 )
 SOCIALACCOUNT_AUTO_SIGNUP = True
 # This will show detailed logs for debugging purposes.
-
-CLOUDINARY_STORAGE = {
-    'CLOUD_NAME': config('CLOUDINARY_CLOUD_NAME'),
-    'API_KEY': config('CLOUDINARY_API_KEY'),
-    'API_SECRET': config('CLOUDINARY_API_SECRET'),
-}
-
-DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
-
 
 MESSAGE_TAGS = {
     message_constants.DEBUG: 'debug',

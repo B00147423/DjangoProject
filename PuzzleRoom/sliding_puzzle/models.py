@@ -15,7 +15,7 @@ class PuzzleRoom(models.Model):
     invite_token = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
     invite_used = models.BooleanField(default=False)
     
-    # Replace RoomParticipant model with player1 and player2 fields
+   
     player1 = models.ForeignKey(User, on_delete=models.CASCADE, related_name='sliding_player1_rooms', null=True, blank=True)
     player2 = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='sliding_player2_rooms')
 

@@ -336,13 +336,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
     initializeWebSocket();
-    function safeImageUrl(url) {
-        if (url.startsWith("http") || url.startsWith("https")) {
-            return url;  // It's a full Cloudinary URL — use it directly
-        }
-        return `/media/${url}`;  // It's a relative local path
-    }
-    
+
     function handlePieceRemove(pieceId) {
         // Remove the piece from the grid for everyone
         removePieceFromGrid(pieceId);
@@ -352,7 +346,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const pieceElement = document.createElement("div");
         pieceElement.classList.add("piece");
         pieceElement.dataset.pieceId = pieceId;
-        pieceElement.style.backgroundImage = `url('${safeImageUrl(pieceImages[pieceId])}')`;
+        pieceElement.style.backgroundImage = `url('${pieceImages[pieceId]}')`;
     
         pieceElement.addEventListener("click", () => {
             if (selectedPiece) selectedPiece.classList.remove("selected");

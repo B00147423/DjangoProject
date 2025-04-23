@@ -1,0 +1,15 @@
+.piece {
+    background-size: cover;
+    background-position: center;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    width: 80px;
+    height: 80px;
+}
+.piece.disabled {
+    opacity: 0.5;
+    pointer-events: none;
+}
+.piece.selected {
+    border: 2px solid #3B82F6;
+}

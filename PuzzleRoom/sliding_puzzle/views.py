@@ -22,10 +22,14 @@ from PIL import Image
 import os
 from datetime import datetime
 import cloudinary.uploader
+from django.conf import settings
+from django.core.files.storage import FileSystemStorage
+
 @login_required
 def room_full(request):
     return render(request, 'sliding_puyzzle/room_full.html')
 from io import BytesIO
+
 @login_required
 def create_room(request):
     if request.method == "POST":
@@ -37,15 +41,12 @@ def create_room(request):
 
         uploaded_image = request.FILES['puzzleImage']
 
-        # 🔄 Upload image directly to Cloudinary
-        result = cloudinary.uploader.upload(
-            uploaded_image,
-            folder="puzzles/originals/",
-            resource_type="image"
-        )
-        image_url = result["secure_url"]
+        # ✅ Save image to MEDIA_ROOT
+        fs = FileSystemStorage()
+        filename = fs.save(uploaded_image.name, uploaded_image)
+        image_path = fs.path(filename)
 
-        # Set grid size based on difficulty
+        # Set grid size
         grid_sizes = {'easy': 3, 'medium': 4, 'hard': 5}
         grid_size = grid_sizes.get(difficulty.lower(), 4)
         pieces = [i for i in range(1, grid_size * grid_size)] + ['empty']
@@ -76,18 +77,23 @@ def create_room(request):
             state=initial_state
         )
 
-        # Pass the actual PIL image instead of path
-        image = Image.open(uploaded_image)
+        # ✅ Use local image
+        image = Image.open(image_path)
         split_image_and_create_pieces(new_room, image, puzzle)
 
         return redirect('sliding_puzzle:room_detail', room_id=new_room.room_id)
-
 
 def split_image_and_create_pieces(room, image, puzzle):
     grid_size = puzzle.rows
     img_width, img_height = image.size
     tile_width = img_width // grid_size
     tile_height = img_height // grid_size
+
+    # Create folder for storing tiles
+    # ✅ Save tiles to match frontend expectation: /media/puzzles/<room_id>/tile_0_0.png
+    folder_path = os.path.join(settings.MEDIA_ROOT, 'puzzles', room.room_id)
+    os.makedirs(folder_path, exist_ok=True)
+
 
     for row in range(grid_size):
         for col in range(grid_size):
@@ -101,23 +107,14 @@ def split_image_and_create_pieces(room, image, puzzle):
 
             tile = image.crop((left, upper, right, lower))
 
-            # 🔄 Save to memory buffer
-            buffer = BytesIO()
-            tile.save(buffer, format='PNG')
-            buffer.seek(0)
+            # 🖼️ Save the tile locally
+            filename = f"tile_{row}_{col}.png"
+            file_path = os.path.join(folder_path, filename)
+            tile.save(file_path)
 
-            # 🔄 Upload to Cloudinary
-            upload_result = cloudinary.uploader.upload(
-                buffer,
-                folder=f"puzzles/pieces/{room.room_id}/",
-                public_id=f"tile_{row}_{col}",
-                overwrite=True,
-                resource_type="image"
-            )
+            # 📦 Relative path to save in model (for serving later)
+            relative_path = os.path.join('puzzles', 'pieces', room.room_id, filename)
 
-            tile_url = upload_result["secure_url"]
-
-            # Save piece (you can store tile_url in your model if needed)
             PuzzlePiece.objects.create(
                 puzzle=puzzle,
                 room=room,
@@ -125,8 +122,9 @@ def split_image_and_create_pieces(room, image, puzzle):
                 current_row=row,
                 current_col=col,
                 is_correct=False,
-                # If your model has a field like image_url, store tile_url there
+                image=relative_path  # ✅ Assuming your model has an `image` field
             )
+
 
 @login_required
 def room_detail(request, room_id):

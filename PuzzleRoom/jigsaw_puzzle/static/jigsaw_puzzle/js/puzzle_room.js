@@ -195,14 +195,28 @@ document.addEventListener('DOMContentLoaded', () => {
                 data.pieces.forEach(piece => {
                     if (piece.is_placed) {
                         const targetLayer = piece.placed_by === 'player1' ? player1Layer : player2Layer;
+                        const isOpponentPiece = piece.placed_by !== playerRole;
+                        
+                        console.log(`🔍 Loading piece ${piece.id} from server - placed by ${piece.placed_by}, is opponent: ${isOpponentPiece}`);
+                        
                         updatePieceOnGrid(
                             targetLayer,
                             piece.id,
                             piece.x_position,
                             piece.y_position,
-                            piece.image_piece,
-                            piece.placed_by !== playerRole
+                            piece.image_url,
+                            isOpponentPiece
                         );
+                        
+                        // Store in placedPieces with the correct player role
+                        const placedKey = `${piece.placed_by}_${piece.id}`;
+                        placedPieces[placedKey] = {
+                            x: piece.x_position,
+                            y: piece.y_position,
+                            imageUrl: piece.image_url,
+                            is_correct: piece.is_correct || false,
+                            placed_by: piece.placed_by
+                        };
                     }
                 });
             }
@@ -224,15 +238,20 @@ document.addEventListener('DOMContentLoaded', () => {
             // Determine the correct layer based on player role
             const targetLayer = data.player_role === "player1" ? player1Layer : player2Layer;
             
-            // Update the piece position
-            updatePieceOnGrid(targetLayer, data.piece_id, data.new_x, data.new_y, data.image_url);
+            // Check if this is an opponent's piece
+            const isOpponentPiece = data.player_role !== playerRole;
             
-            // Store the updated position
-            placedPieces[`${data.player_role}_${data.piece_id}`] = { 
+            // Update the piece position
+            updatePieceOnGrid(targetLayer, data.piece_id, data.new_x, data.new_y, data.image_url, isOpponentPiece);
+            
+            // Store the updated position with the correct player role
+            const placedKey = `${data.player_role}_${data.piece_id}`;
+            placedPieces[placedKey] = { 
                 x: data.new_x, 
                 y: data.new_y, 
                 imageUrl: data.image_url,
-                is_correct: data.is_correct
+                is_correct: data.is_correct,
+                placed_by: data.player_role
             };
             
             console.log(`✅ Piece ${data.piece_id} updated in real-time.`);
@@ -263,11 +282,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
         console.log("💡 Display Completion Modal");
 
+        // Check if current user is the winner
+        const isWinner = winner === username;
+        
+        const modalTitle = isWinner ? `🎉 ${winner} Wins! 🎉` : "Game Over!";
+        const modalMessage = isWinner ? 
+            "Congratulations! You finished first in the 1v1 match." : 
+            `${winner} won this match! Better luck next time!`;
+
         const modalHtml = `
             <div id="completion-modal" class="modal-overlay">
                 <div class="modal-content animate-modal">
-                    <h2>🎉 ${winner ? winner + " Wins!" : "Puzzle Completed!"} 🎉</h2>
-                    <p>${winner ? "Congratulations! You finished first in the 1v1 match." : "Great teamwork! The puzzle is now complete."}</p>
+                    <h2>${modalTitle}</h2>
+                    <p>${modalMessage}</p>
                     <p><strong>⏳ Time Taken:</strong> ${completionTime} seconds</p>
                     <p><strong>🔢 Moves Taken:</strong> ${movesTaken}</p>
                     <button id="view-leaderboard">🏆 View Leaderboard</button>
@@ -287,12 +314,14 @@ document.addEventListener('DOMContentLoaded', () => {
             window.location.href = "/jigsaw/leaderboard";
         });
 
-        // Confetti animation for celebration 🎉
-        confetti({
-            particleCount: 200,
-            spread: 90,
-            origin: { y: 0.6 },
-        });
+        // Confetti animation only for the winner
+        if (isWinner) {
+            confetti({
+                particleCount: 200,
+                spread: 90,
+                origin: { y: 0.6 },
+            });
+        }
     }
 
     // Function to update a piece on the grid
@@ -316,7 +345,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
             imageNode.on('contextmenu', (e) => {
                 e.evt.preventDefault();
-                if (playerRole === (imageNode.getAttr('placed_by') || playerRole)) {
+                // Only allow removing pieces placed by the current player
+                if (playerRole === imageNode.getAttr('placed_by')) {
                     const pieceContainer = document.querySelector(`#${playerRole}-pieces [data-piece-id="${pieceId}"]`);
                     if (pieceContainer) pieceContainer.classList.remove('disabled');
                     imageNode.destroy();
@@ -334,7 +364,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             });
 
-            imageNode.setAttr('placed_by', playerRole);
+            // Set the placed_by attribute based on who actually placed the piece
+            // If it's an opponent piece, set it to the opponent's role
+            const piecePlacedBy = isOpponentPiece ? 
+                (playerRole === 'player1' ? 'player2' : 'player1') : 
+                playerRole;
+            
+            imageNode.setAttr('placed_by', piecePlacedBy);
             imageNode.image().src = imageUrl;
             imageNode.image().onload = () => {
                 layer.add(imageNode);
@@ -422,60 +458,58 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
 
-        function safeImageUrl(url) {
-            if (url.startsWith("http") || url.startsWith("https")) {
-                return url;  // It's a full Cloudinary URL — use it directly
-            }
-            return `/media/${url}`;  // It's a relative local path
-        }
+    function loadPuzzlePieces(piecesContainerId, piecesData) {
+        const piecesContainer = document.getElementById(piecesContainerId);
+        const containerRect = piecesContainer.getBoundingClientRect();
+        const pieceSize = 60; // Adjust according to your grid size
+        let nextX = 10; // Initial position
+        let nextY = 10;
+    
+        if ((playerRole === 'player1' && piecesContainerId === 'player1-pieces') ||
+            (playerRole === 'player2' && piecesContainerId === 'player2-pieces')) {
+    
+            // Filter pieces that are assigned to the current player
+            const playerPieces = piecesData.filter(piece => piece.player_assignment === playerRole);
+            
+            console.log(`Loading ${playerPieces.length} pieces for ${playerRole} in ${piecesContainerId}`);
+            
+            playerPieces.forEach((piece, index) => {
+                const pieceElement = document.createElement('div');
+                pieceElement.classList.add('piece');
+                pieceElement.dataset.pieceId = piece.id;
+                pieceElement.style.backgroundImage = `url('${window.location.origin}${piece.image_url}')`;
         
-
-        function loadPuzzlePieces(piecesContainerId, piecesData) {
-            const piecesContainer = document.getElementById(piecesContainerId);
-            const containerRect = piecesContainer.getBoundingClientRect();
-            const pieceSize = 60; // Adjust according to your grid size
-            let nextX = 10; // Initial position
-            let nextY = 10;
+                // Positioning logic to prevent stacking
+                pieceElement.style.position = "absolute";
+                pieceElement.style.left = `${nextX}px`;
+                pieceElement.style.top = `${nextY}px`;
         
-            if ((playerRole === 'player1' && piecesContainerId === 'player1-pieces') ||
-                (playerRole === 'player2' && piecesContainerId === 'player2-pieces')) {
+                nextX += pieceSize + 15; // Move right for next piece
+                if (nextX + pieceSize > containerRect.width) {
+                    nextX = 10; // Reset to start of the row
+                    nextY += pieceSize + 20; // Move down for next row
+                }
         
-                piecesData.forEach((piece, index) => {
-                    const pieceElement = document.createElement('div');
-                    pieceElement.classList.add('piece');
-                    pieceElement.dataset.pieceId = piece.id;
-                    pieceElement.style.backgroundImage = `url('${safeImageUrl(piece.image_url)}')`;
-        
-                    // Positioning logic to prevent stacking
-                    pieceElement.style.position = "absolute";
-                    pieceElement.style.left = `${nextX}px`;
-                    pieceElement.style.top = `${nextY}px`;
-        
-                    nextX += pieceSize + 15; // Move right for next piece
-                    if (nextX + pieceSize > containerRect.width) {
-                        nextX = 10; // Reset to start of the row
-                        nextY += pieceSize + 20; // Move down for next row
-                    }
-        
-                    pieceElement.addEventListener('click', () => {
-                        if (selectedPiece) selectedPiece.classList.remove('selected');
-                        selectedPiece = pieceElement;
-                        pieceElement.classList.add('selected');
-                    });
-        
-                    if (piece.is_placed) {
-                        pieceElement.classList.add('disabled');
-                        placedPieces[piece.id] = true;
-                    }
-        
-                    piecesContainer.appendChild(pieceElement);
+                pieceElement.addEventListener('click', () => {
+                    if (selectedPiece) selectedPiece.classList.remove('selected');
+                    selectedPiece = pieceElement;
+                    pieceElement.classList.add('selected');
                 });
         
-                // Ensure the container doesn't scroll
-                piecesContainer.style.overflow = 'hidden';
-                piecesContainer.style.position = 'relative';
-            }
+                if (piece.is_placed) {
+                    pieceElement.classList.add('disabled');
+                    const placedKey = `${playerRole}_${piece.id}`;
+                    placedPieces[placedKey] = true;
+                }
+        
+                piecesContainer.appendChild(pieceElement);
+            });
+        
+            // Ensure the container doesn't scroll
+            piecesContainer.style.overflow = 'hidden';
+            piecesContainer.style.position = 'relative';
         }
+    }
     
     
      function createGrid(stage, layer, player) {
@@ -530,13 +564,22 @@ document.addEventListener('DOMContentLoaded', () => {
                                         (playerRole === 'player2' && piece.placed_by === 'player1');
                 const targetLayer = piece.placed_by === 'player1' ? player1Layer : player2Layer;
     
-                console.log(`📌 Drawing piece ${piece.id} at (${piece.x}, ${piece.y}) - Opponent: ${isOpponentPiece}`);
+                console.log(`📌 Drawing piece ${piece.id} at (${piece.x_position}, ${piece.y_position}) - Opponent: ${isOpponentPiece}`);
     
+                // Store the piece in placedPieces with the correct player role
+                const placedKey = `${piece.placed_by}_${piece.id}`;
+                placedPieces[placedKey] = { 
+                    x: piece.x_position, 
+                    y: piece.y_position, 
+                    imageUrl: piece.image_url,
+                    is_correct: piece.is_correct || false // Use the is_correct value from the server
+                };
+
                 updatePieceOnGrid(
                     targetLayer,
                     piece.id,
-                    piece.x,  // ✅ Correct field name
-                    piece.y,  // ✅ Correct field name
+                    piece.x_position,  // ✅ Use x_position instead of x
+                    piece.y_position,  // ✅ Use y_position instead of y
                     piece.image_url,  // ✅ Correct image field
                     isOpponentPiece
                 );
@@ -647,23 +690,29 @@ document.addEventListener('DOMContentLoaded', () => {
                 removePieceFromGrid(pieceId, layer);
             });
 
+            // Set the placed_by attribute to track who placed the piece
             imageNode.setAttr('placed_by', playerRole);
+            
             imageNode.image().src = pieceImageUrl;
             imageNode.image().onload = () => {
                 layer.add(imageNode);
                 layer.draw();
             };
             
+            // Send move update to other players
             sendMove(pieceId, newX, newY, pieceImageUrl);
 
             // Check if piece is placed correctly
             const isCorrect = checkPiecePosition(pieceId, newX, newY);
+            
+            // Store the piece in placedPieces with the correct player role
             const placedKey = `${playerRole}_${pieceId}`;
             placedPieces[placedKey] = {
                 x: newX,
                 y: newY,
                 imageUrl: pieceImageUrl,
-                is_correct: isCorrect
+                is_correct: isCorrect,
+                placed_by: playerRole // Add the placed_by attribute to the stored data
             };
 
             selectedPiece.classList.add('disabled');
