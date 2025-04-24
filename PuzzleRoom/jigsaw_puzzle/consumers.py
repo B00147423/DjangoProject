@@ -93,7 +93,7 @@ class PuzzleConsumer(AsyncWebsocketConsumer):
         for piece in pieces:
             if piece["is_placed"]:
                 if piece["x_position"] is None or piece["y_position"] is None:
-                    logger.error(f"❌ ERROR: Piece {piece['id']} is placed but missing position!")
+                    logger.error(f" ERROR: Piece {piece['id']} is placed but missing position!")
                 # Convert image_piece to URL if it's a FileField
                 if piece.get("image_piece"):
                     piece["image_url"] = piece["image_piece"].url if hasattr(piece["image_piece"], 'url') else str(piece["image_piece"])
@@ -130,7 +130,6 @@ class PuzzleConsumer(AsyncWebsocketConsumer):
         base_grid_size = data['base_grid_size']
         print(f"🔍 Piece {piece_id} | New X: {new_x}, New Y: {new_y} | Player: {player_role}")
 
-        # ✅ Fix: Get image_url properly
         image_url = data.get('image_url', None)
 
         # Get the piece object
@@ -147,7 +146,6 @@ class PuzzleConsumer(AsyncWebsocketConsumer):
         room.moves_taken += 1  # Increment total moves
         await database_sync_to_async(room.save)()
 
-        # ✅ Get elapsed time
         elapsed_time = await database_sync_to_async(room.get_elapsed_time)()
         piece_correct = await self.is_piece_correct(piece_id, base_grid_size)
 
@@ -180,7 +178,7 @@ class PuzzleConsumer(AsyncWebsocketConsumer):
         # Check if the puzzle is already completed
         room = await database_sync_to_async(JigsawPuzzleRoom.objects.get)(id=self.room_id)
         if room.completed:
-            print(f"❌ Cannot remove piece {piece_id}, puzzle is already completed.")
+            print(f"Cannot remove piece {piece_id}, puzzle is already completed.")
             return  # Stop removal if puzzle is completed
 
         # Reset the piece in the database
@@ -434,10 +432,10 @@ class PuzzleConsumer(AsyncWebsocketConsumer):
 
         if is_correct:
             piece.is_correct = True
-            print(f"✅ Piece {piece_id} is in the correct grid cell!")
+            print(f"Piece {piece_id} is in the correct grid cell!")
         else:
             piece.is_correct = False
-            print(f"❌ Piece {piece_id} is NOT in the correct grid cell!")
+            print(f"Piece {piece_id} is NOT in the correct grid cell!")
         
         piece.save()
         return piece.is_correct
@@ -518,8 +516,8 @@ class PuzzleConsumer(AsyncWebsocketConsumer):
             'type': 'game_over',
             'message': event['message'],
             'winner': event['winner'],
-            'elapsed_time': event['elapsed_time'],  # Show time taken
-            'winner_moves': event['winner_moves'],  # Show winner's moves
+            'elapsed_time': event['elapsed_time'],
+            'winner_moves': event['winner_moves'],
         }))
 
     async def mark_puzzle_as_completed(self):

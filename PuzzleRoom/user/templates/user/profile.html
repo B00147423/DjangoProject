@@ -1,4 +1,4 @@
-{% load static %}  <!-- Add this line at the top of your template -->
+{% load static %}
 {% if user.profile.avatar %}
     <img src="{{ user.profile.avatar.url }}" alt="{{ user.username }}'s avatar" />
 {% else %}

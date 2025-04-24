@@ -157,10 +157,16 @@ document.addEventListener('DOMContentLoaded', () => {
                 start_time: startTime
             })
         })
-        .then(response => response.json())
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json();
+        })
         .then(data => {
             if (data.status === 'success') {
                 console.log('Puzzle state saved successfully');
+
             } else {
                 console.error('Error saving puzzle state');
             }

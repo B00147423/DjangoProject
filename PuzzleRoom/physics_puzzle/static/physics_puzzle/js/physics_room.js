@@ -2,21 +2,18 @@ document.addEventListener("DOMContentLoaded", () => {
     const puzzleDataElement = document.getElementById("puzzle-data");
 
     if (!puzzleDataElement) {
-        console.error("❌ puzzle-data element not found in the HTML!");
         return;
     }
 
     let piecesData;
     try {
         piecesData = JSON.parse(puzzleDataElement.textContent);
-        console.log("✅ Loaded puzzle data:", piecesData);
     } catch (error) {
-        console.error("❌ Error parsing puzzle data:", error);
         return;
     }
 
     if (!piecesData || piecesData.length === 0) {
-        console.warn("⚠️ No puzzle pieces found! Check if pieces are being sent from Django.");
+        console.warn("No puzzle pieces found! Check if pieces are being sent from Django.");
     }
 
     // Matter.js setup
@@ -24,7 +21,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const engine = Engine.create();
     const world = engine.world;
 
-    // ✅ Increase gravity so pieces fall naturally
+
     engine.world.gravity.y = 1.5;
 
     // Render setup
@@ -35,16 +32,15 @@ document.addEventListener("DOMContentLoaded", () => {
         options: { width: 800, height: 600, wireframes: false, background: "#121212" }
     });
 
-    // ✅ Movable bar at the bottom
+
     let bar = Bodies.rectangle(400, 550, 250, 20, {
-        isStatic: false, // Make it dynamic
+        isStatic: false, 
         friction: 0.1,
         restitution: 0.2,
         render: { fillStyle: "gray" }
     });
     World.add(world, bar);
 
-    // ✅ Green outline on top of the bar
     let outline = Bodies.rectangle(400, 500, 250, 150, {
         isStatic: false, // Make it dynamic
         friction: 0.1,
@@ -57,7 +53,6 @@ document.addEventListener("DOMContentLoaded", () => {
     });
     World.add(world, outline);
 
-    // ✅ Link the outline to the bar
     const barOutlineConstraint = Matter.Constraint.create({
         bodyA: bar,
         bodyB: outline,
@@ -67,7 +62,6 @@ document.addEventListener("DOMContentLoaded", () => {
     });
     World.add(world, barOutlineConstraint);
 
-    // ✅ Keyboard movement for bar and outline
     document.addEventListener("keydown", (event) => {
         if (event.key === "ArrowLeft") {
             Body.setVelocity(bar, { x: -5, y: 0 });
@@ -84,19 +78,16 @@ document.addEventListener("DOMContentLoaded", () => {
     ];
     World.add(world, walls);
 
-    // ✅ Drop pieces **one by one**
     let pieceBodies = [];
     let currentPieceIndex = 0;
 
     function dropNextPiece() {
         if (currentPieceIndex >= piecesData.length) {
-            console.log("✅ All pieces dropped!");
             return;
         }
 
         const piece = piecesData[currentPieceIndex];
 
-        // ✅ Create a falling puzzle piece
         const puzzlePiece = Bodies.rectangle(
             400, -50, // Start at the top
             80, 80, // Size of the piece
@@ -124,7 +115,6 @@ document.addEventListener("DOMContentLoaded", () => {
         setTimeout(dropNextPiece, 2000); // Drop next piece after 2 sec
     }
 
-    // ✅ Snap pieces into correct spots in the outline
     Events.on(engine, "afterUpdate", () => {
         pieceBodies.forEach(piece => {
             // Check if the piece is inside the green outline
@@ -134,18 +124,17 @@ document.addEventListener("DOMContentLoaded", () => {
                 piece.position.y > outline.position.y - 75 && // Top edge of outline
                 piece.position.y < outline.position.y + 75 // Bottom edge of outline
             ) {
-                console.log(`✅ Piece ${piece.id} snapped into place!`);
                 Body.setPosition(piece, { x: piece.correctX, y: outline.position.y - 40 });
                 Body.setStatic(piece, true); // Make the piece static (stop it from moving)
             }
         });
     });
 
-    // ✅ Run engine
+    // 
     const runner = Runner.create();
     Runner.run(runner, engine);
     Render.run(render);
 
-    // ✅ Start dropping pieces
+    //
     setTimeout(dropNextPiece, 1000);
 });

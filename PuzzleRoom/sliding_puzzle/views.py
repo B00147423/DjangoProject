@@ -41,7 +41,6 @@ def create_room(request):
 
         uploaded_image = request.FILES['puzzleImage']
 
-        # ✅ Save image to MEDIA_ROOT
         fs = FileSystemStorage()
         filename = fs.save(uploaded_image.name, uploaded_image)
         image_path = fs.path(filename)
@@ -77,7 +76,6 @@ def create_room(request):
             state=initial_state
         )
 
-        # ✅ Use local image
         image = Image.open(image_path)
         split_image_and_create_pieces(new_room, image, puzzle)
 
@@ -90,7 +88,7 @@ def split_image_and_create_pieces(room, image, puzzle):
     tile_height = img_height // grid_size
 
     # Create folder for storing tiles
-    # ✅ Save tiles to match frontend expectation: /media/puzzles/<room_id>/tile_0_0.png
+    # Save tiles to match frontend expectation: /media/puzzles/<room_id>/tile_0_0.png
     folder_path = os.path.join(settings.MEDIA_ROOT, 'puzzles', room.room_id)
     os.makedirs(folder_path, exist_ok=True)
 
@@ -107,12 +105,12 @@ def split_image_and_create_pieces(room, image, puzzle):
 
             tile = image.crop((left, upper, right, lower))
 
-            # 🖼️ Save the tile locally
+            # Save the tile locally
             filename = f"tile_{row}_{col}.png"
             file_path = os.path.join(folder_path, filename)
             tile.save(file_path)
 
-            # 📦 Relative path to save in model (for serving later)
+            # Relative path to save in model (for serving later)
             relative_path = os.path.join('puzzles', 'pieces', room.room_id, filename)
 
             PuzzlePiece.objects.create(
@@ -122,7 +120,7 @@ def split_image_and_create_pieces(room, image, puzzle):
                 current_row=row,
                 current_col=col,
                 is_correct=False,
-                image=relative_path  # ✅ Assuming your model has an `image` field
+                image=relative_path
             )
 
 
@@ -131,7 +129,6 @@ def room_detail(request, room_id):
     room = get_object_or_404(PuzzleRoom, room_id=room_id)
     puzzle_pieces = PuzzlePiece.objects.filter(room=room)
 
-    # Get the complete saved state from the room
     puzzle_state = {
         'pieces': room.state.get('pieces', []),
         'grid_size': room.puzzle.rows,

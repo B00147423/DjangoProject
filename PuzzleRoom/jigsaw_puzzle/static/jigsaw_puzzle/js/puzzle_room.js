@@ -1,5 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
-    let isWebSocketConnected = false; // 🔥 Move this line here!
+    let isWebSocketConnected = false;
 
     function updateMoveCounters(player1Moves, player2Moves) {
         const player1Element = document.getElementById("player1-moves");
@@ -13,7 +13,6 @@ document.addEventListener('DOMContentLoaded', () => {
             player2Element.textContent = player2Moves;
         }
         
-        console.log(`✅ Move counters updated - Player 1: ${player1Moves}, Player 2: ${player2Moves}`);
     }
     // Parse the JSON data from the script tags
     const piecesDataElement = document.getElementById('puzzle-data');
@@ -90,17 +89,15 @@ document.addEventListener('DOMContentLoaded', () => {
     const socket = new WebSocket(`${protocol}://${window.location.host}/ws/puzzle/${roomId}/`);
  
     socket.onopen = function () {
-        console.log('WebSocket connection established');
         isWebSocketConnected = true;
     };
 
     socket.onclose = function () {
-        console.log('WebSocket connection closed');
         isWebSocketConnected = false;
     };
 
     socket.onerror = function(error) {
-        console.error('WebSocket error:', error);
+        isWebSocketConnected = false;
     };
 
     // Chat elements
@@ -115,7 +112,6 @@ document.addEventListener('DOMContentLoaded', () => {
     function sendChatMessage() {
         const message = chatInput.value.trim();
         if (message && isWebSocketConnected) {
-            console.log('💬 Sending chat message:', message);
             socket.send(JSON.stringify({
                 type: 'chat_message',
                 message: message,
@@ -153,7 +149,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function appendChatMessage(username, message) {
         if (!chatBox) return;
-        console.log('📝 Appending chat message:', username, message);
         
         const messageDiv = document.createElement('div');
         messageDiv.classList.add('chat-message');
@@ -172,14 +167,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     socket.onmessage = function (event) {
         const data = JSON.parse(event.data);
-        console.log("📥 WebSocket Data Received:", data);
-        
         if (data.type === "current_state") {
-            console.log(`📊 Initial game state - Player 1 Moves: ${data.player1_moves}, Player 2 Moves: ${data.player2_moves}`);
             updateMoveCounters(data.player1_moves, data.player2_moves);
 
             if (data.elapsed_time !== undefined) {
-                console.log("⏳ Starting count-up timer with elapsed time:", data.elapsed_time);
                 startCountup(data.elapsed_time);
             }
 
@@ -196,9 +187,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (piece.is_placed) {
                         const targetLayer = piece.placed_by === 'player1' ? player1Layer : player2Layer;
                         const isOpponentPiece = piece.placed_by !== playerRole;
-                        
-                        console.log(`🔍 Loading piece ${piece.id} from server - placed by ${piece.placed_by}, is opponent: ${isOpponentPiece}`);
-                        
+       
                         updatePieceOnGrid(
                             targetLayer,
                             piece.id,
@@ -222,18 +211,16 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
         else if (data.type === "chat_message") {
-            console.log(`💬 Received chat message from ${data.username}: ${data.message}`);
             appendChatMessage(data.username, data.message);
         }
         else if (data.type === "piece_move") {
-            console.log(`📌 Piece moved: ID=${data.piece_id}, New X=${data.new_x}, New Y=${data.new_y}`);
+        
             
             // Update move counters with the latest values
             updateMoveCounters(data.player1_moves, data.player2_moves);
             
             // Sync local move counter
             moveCounter = data.player_role === "player1" ? data.player1_moves : data.player2_moves;
-            console.log(`🔄 Synced moveCounter: ${moveCounter}`);
             
             // Determine the correct layer based on player role
             const targetLayer = data.player_role === "player1" ? player1Layer : player2Layer;
@@ -253,11 +240,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 is_correct: data.is_correct,
                 placed_by: data.player_role
             };
-            
-            console.log(`✅ Piece ${data.piece_id} updated in real-time.`);
         }
         else if (data.type === "puzzle_completed") {
-            console.log("🎉 Puzzle Completed!");
+            
             showCompletionModal(
                 data.completion_time,
                 data.moves_taken,
@@ -271,7 +256,6 @@ document.addEventListener('DOMContentLoaded', () => {
     // Function to show the completion modal
     function showCompletionModal(completionTime = 0, movesTaken = 0, winner = null) {
         if (document.getElementById("completion-modal")) {
-            console.log("Modal already displayed.");
             return;
         }
 
@@ -280,7 +264,6 @@ document.addEventListener('DOMContentLoaded', () => {
             piece.style.pointerEvents = "none";
         });
 
-        console.log("💡 Display Completion Modal");
 
         // Check if current user is the winner
         const isWinner = winner === username;
@@ -326,7 +309,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Function to update a piece on the grid
     function updatePieceOnGrid(layer, pieceId, newX, newY, imageUrl, isOpponentPiece = false) {
-        console.log(`🔄 Placing piece ${pieceId} at (${newX}, ${newY}) - Opponent: ${isOpponentPiece}`);
     
         const existingPiece = layer.findOne(`#${pieceId}`);
         if (existingPiece) {
@@ -408,7 +390,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 .then(response => response.json())
                 .then(data => {
                     if (data.status !== 'success') {
-                        console.error('Failed to remove piece:', data.message);
+                        throw new Error(data.message || 'Unknown error from server');
                     }
                 });
 
@@ -471,7 +453,6 @@ document.addEventListener('DOMContentLoaded', () => {
             // Filter pieces that are assigned to the current player
             const playerPieces = piecesData.filter(piece => piece.player_assignment === playerRole);
             
-            console.log(`Loading ${playerPieces.length} pieces for ${playerRole} in ${piecesContainerId}`);
             
             playerPieces.forEach((piece, index) => {
                 const pieceElement = document.createElement('div');
@@ -484,10 +465,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 pieceElement.style.left = `${nextX}px`;
                 pieceElement.style.top = `${nextY}px`;
         
-                nextX += pieceSize + 15; // Move right for next piece
+                nextX += pieceSize + 15;
                 if (nextX + pieceSize > containerRect.width) {
-                    nextX = 10; // Reset to start of the row
-                    nextY += pieceSize + 20; // Move down for next row
+                    nextX = 10;
+                    nextY += pieceSize + 20;
                 }
         
                 pieceElement.addEventListener('click', () => {
@@ -554,39 +535,33 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Function to load initial pieces
     function loadInitialPieces(pieces) {
-        console.log("🔄 Loading all pieces after refresh...");
     
         pieces.forEach(piece => {
             if (piece.is_placed) {
-                console.log(`🔍 Loading piece ${piece.id} placed by ${piece.placed_by}`);
     
                 const isOpponentPiece = (playerRole === 'player1' && piece.placed_by === 'player2') ||
                                         (playerRole === 'player2' && piece.placed_by === 'player1');
                 const targetLayer = piece.placed_by === 'player1' ? player1Layer : player2Layer;
     
-                console.log(`📌 Drawing piece ${piece.id} at (${piece.x_position}, ${piece.y_position}) - Opponent: ${isOpponentPiece}`);
-    
-                // Store the piece in placedPieces with the correct player role
+  
                 const placedKey = `${piece.placed_by}_${piece.id}`;
                 placedPieces[placedKey] = { 
                     x: piece.x_position, 
                     y: piece.y_position, 
                     imageUrl: piece.image_url,
-                    is_correct: piece.is_correct || false // Use the is_correct value from the server
+                    is_correct: piece.is_correct || false 
                 };
 
                 updatePieceOnGrid(
                     targetLayer,
                     piece.id,
-                    piece.x_position,  // ✅ Use x_position instead of x
-                    piece.y_position,  // ✅ Use y_position instead of y
-                    piece.image_url,  // ✅ Correct image field
+                    piece.x_position,  
+                    piece.y_position,  
+                    piece.image_url,  
                     isOpponentPiece
                 );
             }
         });
-    
-        console.log("✅ All pieces loaded.");
     }
     
 
@@ -614,7 +589,6 @@ document.addEventListener('DOMContentLoaded', () => {
     // Function to send a move via WebSocket
     function sendMove(pieceId, newX, newY, imageUrl) {
         if (!isWebSocketConnected) {
-            console.error('WebSocket not connected!');
             return;
         }
         moveCounter++; // Keep local count, but do NOT update UI directly
@@ -643,27 +617,20 @@ document.addEventListener('DOMContentLoaded', () => {
             const expectedGridX = piece.grid_x;
             const expectedGridY = piece.grid_y;
 
-            console.log(`🔍 Checking grid position for piece ${pieceId}`);
-            console.log(`Current grid: (${currentGridX}, ${currentGridY})`);
-            console.log(`Expected grid: (${expectedGridX}, ${expectedGridY})`);
-            console.log(`Piece grid_x: ${piece.grid_x}, grid_y: ${piece.grid_y}`);
 
             // Compare the grid positions
             const isCorrect = (currentGridX === expectedGridX && currentGridY === expectedGridY);
 
             if (isCorrect) {
-                console.log(`✅ Piece ${pieceId} is in the correct grid cell.`);
                 piece.is_correct = true;
                 highlightPiece(pieceId, "green");
                 return true;
             } else {
-                console.log(`❌ Piece ${pieceId} is not in the correct grid cell.`);
                 piece.is_correct = false;
                 highlightPiece(pieceId, "red");
                 return false;
             }
         } else {
-            console.error(`❌ Piece ${pieceId} not found in pieces.`);
             return false;
         }
     }
@@ -712,30 +679,28 @@ document.addEventListener('DOMContentLoaded', () => {
                 y: newY,
                 imageUrl: pieceImageUrl,
                 is_correct: isCorrect,
-                placed_by: playerRole // Add the placed_by attribute to the stored data
+                placed_by: playerRole 
             };
 
             selectedPiece.classList.add('disabled');
             selectedPiece.classList.remove('selected');
             selectedPiece = null;
 
-            checkPuzzleCompletion(); // Check if the puzzle is complete
+            checkPuzzleCompletion();
         }
     }
 
-    // Function to check if the puzzle is completed
     function checkPuzzleCompletion() {
-        // Get all pieces for the current player
+      
         const playerPieces = Object.entries(placedPieces)
             .filter(([key]) => key.startsWith(playerRole))
             .map(([_, piece]) => piece);
 
-        // Check if all pieces are correct
+     
         const allCorrect = playerPieces.every(piece => piece.is_correct);
-        console.log("Checking puzzle completion:", allCorrect);
+
 
         if (allCorrect) {
-            console.log("🎉 Puzzle completed! Sending completion event...");
             socket.send(JSON.stringify({
                 type: "check_completion",
                 room_id: roomId,
@@ -744,7 +709,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // Function to highlight a piece
     function highlightPiece(pieceId, color) {
         const piece = document.querySelector(`[data-piece-id="${pieceId}"]`);
         if (piece) {
@@ -774,7 +738,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Function to update visibility based on player role and solo mode
     function updateVisibility() {
-        console.log('Updating visibility:', { isSoloMode, playerRole });
         
         if (isSoloMode) {
             // Show only the current player's container
@@ -814,7 +777,6 @@ document.addEventListener('DOMContentLoaded', () => {
     // Toggle event listener
     toggleButton.addEventListener('click', () => {
         isSoloMode = !isSoloMode;
-        console.log('Toggle clicked:', { isSoloMode, playerRole });
 
         // Update the URL without refreshing the page
         const newUrl = new URL(window.location);

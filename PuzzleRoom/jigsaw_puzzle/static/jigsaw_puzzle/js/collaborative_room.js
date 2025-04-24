@@ -109,7 +109,6 @@ document.addEventListener("DOMContentLoaded", () => {
         socket = new WebSocket(`${protocol}://${window.location.host}/ws/puzzle/${roomId}/`);
     
         socket.onopen = () => {
-            console.log("✅ WebSocket connected");
             startGameTimer();
         };
     
@@ -119,7 +118,7 @@ document.addEventListener("DOMContentLoaded", () => {
         };
     
         socket.onerror = (error) => {
-            console.error("❌ WebSocket error:", error);
+            socket.close(); // Close the socket on error
         };
 
         socket.onmessage = (event) => {
@@ -131,7 +130,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     // Update move counter
                 moveCounter = data.moves_taken;
                 document.getElementById("move-counter").textContent = moveCounter;
-                // ✅ Update timer if elapsed_time is sent
+                // Update timer if elapsed_time is sent
                 if (data.elapsed_time !== undefined) {
                     gameStartTime = Date.now() - data.elapsed_time * 1000;
                 }
@@ -143,9 +142,9 @@ document.addEventListener("DOMContentLoaded", () => {
                     piece.is_correct = data.is_correct;
                 }
     
-                setTimeout(checkPuzzleCompletion, 50); // ✅ Ensures updates are applied first
+                setTimeout(checkPuzzleCompletion, 50); // Ensures updates are applied first
     
-                // ✅ Send confirmation if the piece is correct
+                // Send confirmation if the piece is correct
                 if (data.is_correct) {
                     socket.send(JSON.stringify({ type: "confirm_piece", piece_id: data.piece_id }));
                 }
@@ -159,11 +158,9 @@ document.addEventListener("DOMContentLoaded", () => {
                 checkPuzzleCompletion();
             } 
             else if (data.type === "piece_lock") {
-                console.log(`🔒 Piece ${data.piece_id} locked by ${data.player_role}`);
                 lockPieceUI(data.piece_id, data.player_role);
             } 
             else if (data.type === "piece_unlock") {
-                console.log(`🔓 Piece ${data.piece_id} unlocked`);
                 unlockPieceUI(data.piece_id);
             }
             
@@ -178,20 +175,19 @@ document.addEventListener("DOMContentLoaded", () => {
             else if (data.type === "current_state") {
                 loadGameState(data.pieces, data.chat_messages);
                    
-                // ✅ Set correct timer & moves count
+                // Set correct timer & moves count
                 if (data.elapsed_time) {
-                    gameStartTime = Date.now() - data.elapsed_time * 1000;  // ✅ Adjust timer
+                    gameStartTime = Date.now() - data.elapsed_time * 1000;
                 }
                 if (data.moves_taken !== undefined) {
-                    moveCounter = data.moves_taken;  // ✅ Set correct move count
+                    moveCounter = data.moves_taken;
                     document.getElementById("move-counter").textContent = moveCounter;
                 }
 
                 // Restart timer
                 startGameTimer();
-                // ✅ If the puzzle was already completed, show the modal
+                // If the puzzle was already completed, show the modal
                 if (data.puzzle_completed) {
-                    console.log("✅ Puzzle was completed before, showing modal.");
                     showCompletionModal(data.completion_time, data.moves_taken);
                 }
             } 
@@ -217,11 +213,7 @@ document.addEventListener("DOMContentLoaded", () => {
             if (lockedBy !== playerRole) {
                 pieceElement.style.opacity = "0.5"; // Grey out for other player
             }
-    
-            console.log(`🔒 Piece ${pieceId} locked by ${lockedBy}`);
-        } else {
-            console.error(`❌ Piece ${pieceId} not found for locking.`);
-        }
+        } 
     }
 
     function unlockPieceUI(pieceId) {
@@ -232,9 +224,7 @@ document.addEventListener("DOMContentLoaded", () => {
             pieceElement.style.opacity = "1";
     
             console.log(`🔓 Piece ${pieceId} unlocked`);
-        } else {
-            console.error(`❌ Piece ${pieceId} not found for unlocking.`);
-        }
+        } 
     }
     
     function startGameTimer() {
@@ -257,7 +247,6 @@ document.addEventListener("DOMContentLoaded", () => {
         console.log("🔎 Checking puzzle completion:", allCorrect);
     
         if (allCorrect) {
-            console.log("✅ Puzzle Completed! Showing modal.");
             showCompletionModal(data.elapsed_time, data.moves_taken);
 
             socket.send(JSON.stringify({ type: "puzzle_completed", room_id: roomId }));
@@ -299,11 +288,11 @@ document.addEventListener("DOMContentLoaded", () => {
         document.body.insertAdjacentHTML("beforeend", modalHtml);
     
         document.getElementById("return-home").addEventListener("click", () => {
-            window.location.href = "/user/dashboard";  // ✅ Corrected
+            window.location.href = "/user/dashboard";
         });
     
         document.getElementById("view-leaderboard").addEventListener("click", () => {
-            window.location.href = "/jigsaw/leaderboard";  // ✅ Corrected
+            window.location.href = "/jigsaw/leaderboard"; 
         });
         
         confetti({
@@ -312,28 +301,6 @@ document.addEventListener("DOMContentLoaded", () => {
             origin: { y: 0.6 }
         });
     }
-
-    function showCompletedPuzzleFlash() {
-        const puzzleImage = document.createElement("img");
-        puzzleImage.src = puzzleImageUrl;
-        puzzleImage.classList.add("puzzle-flash");
-
-        document.body.appendChild(puzzleImage);
-
-        setTimeout(() => {
-            puzzleImage.remove();
-            document.getElementById("completion-modal").style.display = "block";
-        }, 2000);
-    }
-
-    function getCompletionTime() {
-        const startTime = localStorage.getItem("puzzle_start_time");
-        if (!startTime) return "Unknown";
-    
-        const endTime = new Date().getTime();
-        return Math.round((endTime - startTime) / 1000);
-    }
-
 
     initializeWebSocket();
 
@@ -365,11 +332,8 @@ document.addEventListener("DOMContentLoaded", () => {
             console.log("🔍 Checking Piece:", piece);
     
             if (!piece.image_url || piece.image_url.trim() === "") {
-                console.warn("⚠️ Skipping empty piece:", piece);
-                return;  // ⛔ Do NOT render empty pieces
+                return;  
             }
-    
-            console.log("✅ Rendering valid piece:", piece);
             addPieceToSidebar(piece.id, piece.image_url);
         });
     
@@ -423,7 +387,6 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
-    // Load puzzle pieces
     function loadPuzzlePieces(pieces) {
         const piecesGrid = document.getElementById("pieces-grid");
 
@@ -452,13 +415,11 @@ document.addEventListener("DOMContentLoaded", () => {
         if (selectedPiece) {
             const pieceId = selectedPiece.dataset.pieceId;
     
-            // Use baseGridSize for proper scaling
-            const newX = gridX * baseGridSize;  // Correct scaling
-            const newY = gridY * baseGridSize;  // Correct scaling
+            const newX = gridX * baseGridSize;
+            const newY = gridY * baseGridSize;
     
             console.log(`🛠 Placing piece ${pieceId} at grid (${gridX}, ${gridY}) -> (${newX}, ${newY}) with base size: ${baseGridSize}`);
     
-            // Place piece on grid and send move update
             placePieceOnGrid(pieceId, newX, newY);
             sendMove(pieceId, newX, newY);
     
@@ -469,8 +430,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
     function placePieceOnGrid(pieceId, x, y, imageUrl = pieceImages[pieceId]) {
-        console.log(`📌 Placing piece ${pieceId} at (${x}, ${y}) with image ${imageUrl}`);
-        
         // Update the piece's position in the UI
         const pieceElement = document.querySelector(`[data-piece-id="${pieceId}"]`);
         if (pieceElement) {
@@ -483,9 +442,7 @@ document.addEventListener("DOMContentLoaded", () => {
         if (piece) {
             piece.x = x;
             piece.y = y;
-            console.log(`🔍 Updated piece ${pieceId} in piecesData:`, piece);
         } else {
-            console.error(`❌ Piece ${pieceId} not found in piecesData.`);
         }
     
         // Load and create an image node using Konva
@@ -494,7 +451,6 @@ document.addEventListener("DOMContentLoaded", () => {
     
         imageObj.onload = () => {
             if (!layer) {
-                console.error("❌ Layer is not initialized. Cannot add piece.");
                 return;
             }
     
@@ -518,14 +474,11 @@ document.addEventListener("DOMContentLoaded", () => {
             layer.add(imageNode);
             layer.draw();
     
-            console.log(`✅ Piece ${pieceId} successfully added to the grid.`);
-    
             // Check if the piece is in the correct position
             checkPiecePosition(pieceId, x, y);
         };
     
         imageObj.onerror = () => {
-            console.error(`❌ Failed to load image for piece ${pieceId}: ${imageUrl}`);
         };
     }
     
@@ -541,25 +494,16 @@ document.addEventListener("DOMContentLoaded", () => {
             const expectedGridX = piece.grid_x;
             const expectedGridY = piece.grid_y;
 
-            console.log(`🔍 Checking grid position for piece ${pieceId}`);
-            console.log(`Current grid: (${currentGridX}, ${currentGridY})`);
-            console.log(`Expected grid: (${expectedGridX}, ${expectedGridY})`);
-            console.log(`Piece grid_x: ${piece.grid_x}, grid_y: ${piece.grid_y}`);
-
             if (currentGridX === expectedGridX && currentGridY === expectedGridY) {
-                console.log(`✅ Piece ${pieceId} is in the correct grid cell.`);
                 piece.is_correct = true;
                 highlightPiece(pieceId, "green");
             } else {
-                console.log(`❌ Piece ${pieceId} is not in the correct grid cell.`);
                 piece.is_correct = false;
                 highlightPiece(pieceId, "red");
             }
 
             // Check if all pieces are in the correct position
             checkPuzzleCompletion();
-        } else {
-            console.error(`❌ Piece ${pieceId} not found in piecesData.`);
         }
     }
 
@@ -568,15 +512,12 @@ document.addEventListener("DOMContentLoaded", () => {
         if (pieceElement) {
             console.log(`🔹 Highlighting piece ${pieceId} with ${color}`);
             pieceElement.style.border = `2px solid ${color}`;
-        } else {
-            console.error(`❌ Piece ${pieceId} not found for highlighting.`);
-        }
+        } 
     }
     
     function removePiece(pieceId) {
         if (document.getElementById("completion-modal")) {
-            console.log(`❌ Cannot remove piece ${pieceId}, puzzle is already completed.`);
-            return;  // Stop removal if puzzle is completed
+            return;
         }
     
         removePieceFromGrid(pieceId);
@@ -599,17 +540,6 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
-    function sendRemove(pieceId) {
-        // Send the remove action via WebSocket
-        socket.send(
-            JSON.stringify({
-                type: "piece_remove",
-                piece_id: pieceId,
-                player_role: playerRole, // Include player info for potential logging
-            })
-        );
-    }
-
     // Send WebSocket messages
     function sendMove(pieceId, newX, newY) {
         socket.send(
@@ -626,11 +556,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
     function sendLock(pieceId) {
         if (!socket || socket.readyState !== WebSocket.OPEN) {
-            console.error("❌ WebSocket is not connected. Cannot send lock request.");
             return;
         }
-    
-        console.log(`🔒 Sending lock request for piece ${pieceId} from ${playerRole}`);
     
         socket.send(JSON.stringify({
             type: "piece_lock",
@@ -642,11 +569,9 @@ document.addEventListener("DOMContentLoaded", () => {
     function sendUnlock(pieceId) {
         const pieceElement = document.querySelector(`[data-piece-id="${pieceId}"]`);
         if (!pieceElement) {
-            console.error(`❌ Cannot unlock piece ${pieceId}, element not found.`);
             return;
         }
     
-        // ✅ Unlock UI
         pieceElement.removeAttribute("data-locked-by");
         pieceElement.classList.remove("selected"); // Remove highlight
     
@@ -656,8 +581,6 @@ document.addEventListener("DOMContentLoaded", () => {
                 piece_id: pieceId
             }));
         }
-    
-        console.log(`✅ Piece ${pieceId} unlocked`);
     }
     document.addEventListener("click", (event) => {
         const clickedPiece = event.target.closest('.piece');
@@ -666,20 +589,15 @@ document.addEventListener("DOMContentLoaded", () => {
         const pieceId = clickedPiece.dataset.pieceId;
         const lockedBy = clickedPiece.getAttribute("data-locked-by");
     
-        // ✅ Prevent selecting a locked piece by another player
         if (lockedBy && lockedBy !== playerRole) {
-            console.log(`❌ Piece ${pieceId} is already locked by ${lockedBy}`);
             return;
         }
     
-        // ✅ Unlock the previously locked piece before selecting a new one
         if (lastLockedPiece && lastLockedPiece !== clickedPiece) {
-            console.log(`🔓 Unlocking previous piece: ${lastLockedPiece.dataset.pieceId}`);
             sendUnlock(lastLockedPiece.dataset.pieceId);
             lastLockedPiece.classList.remove("locked"); // Remove locked class
         }
     
-        // ✅ Set new selection and send lock message
         selectedPiece = clickedPiece;
         clickedPiece.classList.add("locked"); // Mark as locked
         lastLockedPiece = clickedPiece; // Store as last locked piece
@@ -711,8 +629,6 @@ document.addEventListener("DOMContentLoaded", () => {
         if (puzzleImageUrl) {
             modal.style.display = "block";
             modalImg.src = puzzleImageUrl;
-        } else {
-            console.error("Puzzle image URL is not available.");
         }
     });
 

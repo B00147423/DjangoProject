@@ -1,53 +1,38 @@
-#C:\Users\beka\OneDrive\Desktop\Year4DjangoMajor-Project\DjangoProject\PuzzleRoom\jigsaw_puzzle\views.py
-from asyncio.log import logger
-from cProfile import Profile
-import random
-from django.shortcuts import get_object_or_404, render, redirect
-from .models import JigsawPuzzleRoom, JigsawPuzzlePiece, Leaderboard
-from .forms import JigsawPuzzleRoomForm
-from PIL import Image
+# Standard Library
 import os
-from django.http import HttpResponse, JsonResponse
-from django.core.files import File
-from django.contrib.auth.models import User
-import json
-from django.conf import settings
-from django.core.files.storage import FileSystemStorage
-from django.contrib.auth.decorators import login_required
-from django.contrib.auth import get_user_model 
-# jigsaw_puzzle/views.py#C:\Users\beka\OneDrive\Desktop\Year4DjangoMajor-Project\DjangoProject\PuzzleRoom\jigsaw_puzzle\views.py
-from asyncio.log import logger
-from cProfile import Profile
-import random
-from django.shortcuts import get_object_or_404, render, redirect
-from .models import JigsawPuzzleRoom, JigsawPuzzlePiece
-from .forms import JigsawPuzzleRoomForm
-from PIL import Image
-import os
-from django.http import HttpResponse, JsonResponse
-from django.core.files import File
-from django.contrib.auth.models import User
-import json
-from django.conf import settings
-from django.core.files.storage import FileSystemStorage
-from django.contrib.auth.decorators import login_required
-from django.contrib.auth import get_user_model 
-# jigsaw_puzzle/views.py
-from django.shortcuts import render, redirect
-from django.urls import reverse
-from asgiref.sync import async_to_sync
-from channels.layers import get_channel_layer
-from django.contrib import messages
-from django.views.decorators.csrf import csrf_exempt
-# Get the custom User model
-User = get_user_model()
 import random
 import string
-from .models import ChatMessage
-from PIL import Image, ImageChops
-import os
-from django.utils import timezone
+import json
 from datetime import timedelta
+from asyncio.log import logger
+from cProfile import Profile
+
+# Django Core
+from django.shortcuts import render, redirect, get_object_or_404
+from django.http import HttpResponse, JsonResponse
+from django.urls import reverse
+from django.core.files import File
+from django.conf import settings
+from django.core.files.storage import FileSystemStorage
+from django.contrib.auth.decorators import login_required
+from django.contrib import messages
+from django.views.decorators.csrf import csrf_exempt
+from django.utils import timezone
+
+# Django Models
+from django.contrib.auth import get_user_model
+from django.contrib.auth.models import User
+from .models import JigsawPuzzleRoom, JigsawPuzzlePiece, Leaderboard, ChatMessage
+
+# Forms
+from .forms import JigsawPuzzleRoomForm
+
+# Image Processing
+from PIL import Image, ImageChops
+
+# Channels/Async
+from asgiref.sync import async_to_sync
+from channels.layers import get_channel_layer
 
 @login_required
 def get_remaining_time(request, room_id):
@@ -221,23 +206,21 @@ def create_jigsaw_room(request):
                         piece_filename = f'piece_{puzzle_room.id}_{i}_{j}.png'
                         piece_path = os.path.join(pieces_dir, piece_filename)
                         
-                        # Save the piece image properly
                         piece.save(piece_path, 'PNG')
 
-                        # Calculate grid position using dynamic base_grid_size
-                        grid_x = j  # Use grid index directly (0 to grid_size-1)
-                        grid_y = i  # Use grid index directly (0 to grid_size-1)
+                        grid_x = j
+                        grid_y = i
 
                         # Create the puzzle piece in the database
                         JigsawPuzzlePiece.objects.create(
                             room=puzzle_room,
                             image_piece=f'puzzle_pieces/{piece_filename}',
-                            x_position=random.randint(0, container_size - base_grid_size),  # Random starting X within container
-                            y_position=random.randint(0, container_size - base_grid_size),  # Random starting Y within container
-                            initial_x=random.randint(0, container_size - base_grid_size),  # Starting X position
-                            initial_y=random.randint(0, container_size - base_grid_size),  # Starting Y position
-                            grid_x=grid_x,  # Grid column index (0 to grid_size-1)
-                            grid_y=grid_y,  # Grid row index (0 to grid_size-1)
+                            x_position=random.randint(0, container_size - base_grid_size),  
+                            y_position=random.randint(0, container_size - base_grid_size), 
+                            initial_x=random.randint(0, container_size - base_grid_size),
+                            initial_y=random.randint(0, container_size - base_grid_size),
+                            grid_x=grid_x, 
+                            grid_y=grid_y,
                         )
             else:
                 # Create two sets of pieces for 1v1 mode
@@ -254,12 +237,9 @@ def create_jigsaw_room(request):
                             piece_filename = f'piece_{puzzle_room.id}_{player_num}_{i}_{j}.png'
                             piece_path = os.path.join(pieces_dir, piece_filename)
                             
-                            # Save the piece image properly
                             piece.save(piece_path, 'PNG')
-
-                            # Calculate grid position using dynamic base_grid_size
-                            grid_x = j  # Use grid index directly (0 to grid_size-1)
-                            grid_y = i  # Use grid index directly (0 to grid_size-1)
+                            grid_x = j
+                            grid_y = i  
 
                             # Create the puzzle piece in the database
                             JigsawPuzzlePiece.objects.create(
@@ -267,10 +247,10 @@ def create_jigsaw_room(request):
                                 image_piece=f'puzzle_pieces/{piece_filename}',
                                 x_position=random.randint(0, container_size - base_grid_size),
                                 y_position=random.randint(0, container_size - base_grid_size),
-                                initial_x=left,  # Starting X position
-                                initial_y=top,  # Starting Y position
-                                grid_x=grid_x,  # Grid column index (0 to grid_size-1)
-                                grid_y=grid_y,  # Grid row index (0 to grid_size-1)
+                                initial_x=left,
+                                initial_y=top,
+                                grid_x=grid_x,
+                                grid_y=grid_y,
                                 player_assignment=player_num,
                             )
 
@@ -285,24 +265,24 @@ def save_puzzle_piece(piece_data):
     fs = FileSystemStorage(location=os.path.join(settings.MEDIA_ROOT, 'jigsaw_pieces'))
     with open(piece_data['path'], 'rb') as piece_file:
         filename = fs.save(piece_data['file_name'], File(piece_file))
-        return filename  # Return only the filename
+        return filename 
     
 @login_required
 def waiting_room(request, room_id):
     room = get_object_or_404(JigsawPuzzleRoom, id=room_id)
     invite_link = request.build_absolute_uri(reverse('jigsaw_puzzle:join_room'))
 
-    # Redirect if both players are ready
+   
     if room.player1_ready and room.player2_ready:
         return redirect(
             'jigsaw_puzzle:collaborative_room' if room.mode == 'collaborative' else 'jigsaw_puzzle:jigsaw_puzzle_room',
             room_id=room.id,
         )
 
-    # Determine the player's role
+    
     player_role = 'player1' if request.user == room.player1 else 'player2' if request.user == room.player2 else None
 
-    # JSON context for JavaScript
+    
     js_context = json.dumps({
         'room': {
             'id': room.id,
@@ -316,24 +296,22 @@ def waiting_room(request, room_id):
         )
     })
 
-    # Render waiting room template
+    
     return render(request, 'jigsaw_puzzle/waiting_room.html', {
         'room': room,
         'invite_link': invite_link,
         'player_role': player_role,
         'player1_ready': room.player1_ready,
         'player2_ready': room.player2_ready,
-        'js_context': js_context,  # Pass serialized JSON to the template
+        'js_context': js_context, 
     })
 
 def create_puzzle_pieces(image_path, difficulty):
     img = Image.open(image_path)
     width, height = img.size
     
-    # Define the directory where pieces will be saved
     pieces_dir = os.path.join(settings.MEDIA_ROOT, 'jigsaw_pieces')
     
-    # Ensure the directory exists
     if not os.path.exists(pieces_dir):
         os.makedirs(pieces_dir)
 
@@ -350,24 +328,24 @@ def create_puzzle_pieces(image_path, difficulty):
             )
             piece = img.crop(box)
             
-            # Generate a unique filename
+           
             piece_filename = f'piece_{i}_{j}_{random.randint(0, 100000)}.png'
             
-            # Save relative to MEDIA_ROOT
+            
             relative_path = os.path.join('jigsaw_pieces', piece_filename)
             absolute_path = os.path.join(settings.MEDIA_ROOT, relative_path)
             
-            # Save the image
+            
             piece.save(absolute_path)
             
-            # Randomize initial positions
+           
             initial_x = random.randint(0, 350)
             initial_y = random.randint(0, 350)
             
-            # Store the relative path that will work with MEDIA_URL
+            
             piece_paths.append({
                 'path': absolute_path,
-                'file_name': relative_path,  # Store relative path
+                'file_name': relative_path,
                 'x': initial_x,
                 'y': initial_y
             })
@@ -405,13 +383,13 @@ def join_room(request):
 
 
 
-# In jigsaw_puzzle/views.py
+
 @login_required
 def jigsaw_puzzle_room(request, room_id):
     room = get_object_or_404(JigsawPuzzleRoom, id=room_id)
     player_role = 'player1' if request.user == room.player1 else 'player2'
     
-    # Get ALL pieces from the room, not just the current player's pieces
+    
     pieces = JigsawPuzzlePiece.objects.filter(room=room)
     
     pieces_data = []
@@ -442,7 +420,7 @@ def jigsaw_puzzle_room(request, room_id):
 def remove_piece(request, piece_id):
     if request.method == 'POST':
         piece = get_object_or_404(JigsawPuzzlePiece, id=piece_id)
-        # Reset the piece position
+       
         piece.x_position = piece.initial_x
         piece.y_position = piece.initial_y
         piece.is_placed = False
@@ -600,108 +578,6 @@ def update_piece_position(request):
 
 def generate_room_code():
     return ''.join(random.choices(string.ascii_uppercase + string.digits, k=8))
-
-# @login_required
-# def create_jigsaw_room(request):
-#     if request.method == 'POST':
-#         form = JigsawPuzzleRoomForm(request.POST, request.FILES)
-#         if form.is_valid():
-#             puzzle_room = form.save(commit=False)
-#             puzzle_room.player1 = request.user
-#             puzzle_room.save()
-#             puzzle_room.room_code = generate_room_code()
-
-#             # Get the uploaded image
-#             image = Image.open(puzzle_room.puzzle_image.path)
-
-#             # Set grid size based on difficulty
-#             grid_sizes = {'easy': 4, 'medium': 6, 'hard': 8}
-#             grid_size = grid_sizes[puzzle_room.difficulty]
-
-#             # Calculate piece size based on image dimensions
-#             width, height = image.size
-#             piece_width = width // grid_size
-#             piece_height = height // grid_size
-
-#             # Create directory for pieces if it doesn't exist
-#             pieces_dir = os.path.join(settings.MEDIA_ROOT, 'puzzle_pieces')
-#             os.makedirs(pieces_dir, exist_ok=True)
-
-#             # Calculate container size and base grid size consistently with frontend
-#             container_size = min(800, int(width * 0.9))  # Use 90% of image width, capped at 800px for larger screens
-#             base_grid_size = container_size // grid_size  # This will give us proportional sizes for each difficulty
-
-#             if puzzle_room.mode == 'collaborative':
-#                 # Create one set of pieces for collaborative mode
-#                 for i in range(grid_size):
-#                     for j in range(grid_size):
-#                         left = j * piece_width
-#                         top = i * piece_height
-#                         right = left + piece_width
-#                         bottom = top + piece_height
-
-#                         piece = image.crop((left, top, right, bottom))
-
-#                         piece_filename = f'piece_{puzzle_room.id}_{i}_{j}.png'
-#                         piece_path = os.path.join(pieces_dir, piece_filename)
-                        
-#                         # Save the piece image properly
-#                         piece.save(piece_path, 'PNG')
-
-#                         # Calculate grid position using dynamic base_grid_size
-#                         grid_x = j  # Use grid index directly (0 to grid_size-1)
-#                         grid_y = i  # Use grid index directly (0 to grid_size-1)
-
-#                         # Create the puzzle piece in the database
-#                         JigsawPuzzlePiece.objects.create(
-#                             room=puzzle_room,
-#                             image_piece=f'puzzle_pieces/{piece_filename}',
-#                             x_position=random.randint(0, container_size - base_grid_size),  # Random starting X within container
-#                             y_position=random.randint(0, container_size - base_grid_size),  # Random starting Y within container
-#                             initial_x=random.randint(0, container_size - base_grid_size),  # Starting X position
-#                             initial_y=random.randint(0, container_size - base_grid_size),  # Starting Y position
-#                             grid_x=grid_x,  # Grid column index (0 to grid_size-1)
-#                             grid_y=grid_y,  # Grid row index (0 to grid_size-1)
-#                         )
-#             else:
-#                 # Create two sets of pieces for 1v1 mode
-#                 for player_num in ['player1', 'player2']:
-#                     for i in range(grid_size):
-#                         for j in range(grid_size):
-#                             left = j * piece_width
-#                             top = i * piece_height
-#                             right = left + piece_width
-#                             bottom = top + piece_height
-
-#                             piece = image.crop((left, top, right, bottom))
-
-#                             piece_filename = f'piece_{puzzle_room.id}_{player_num}_{i}_{j}.png'
-#                             piece_path = os.path.join(pieces_dir, piece_filename)
-                            
-#                             # Save the piece image properly
-#                             piece.save(piece_path, 'PNG')
-
-#                             # Calculate grid position using dynamic base_grid_size
-#                             grid_x = j  # Use grid index directly (0 to grid_size-1)
-#                             grid_y = i  # Use grid index directly (0 to grid_size-1)
-
-#                             # Create the puzzle piece in the database
-#                             JigsawPuzzlePiece.objects.create(
-#                                 room=puzzle_room,
-#                                 image_piece=f'puzzle_pieces/{piece_filename}',
-#                                 x_position=random.randint(0, container_size - base_grid_size),
-#                                 y_position=random.randint(0, container_size - base_grid_size),
-#                                 initial_x=left,  # Starting X position
-#                                 initial_y=top,  # Starting Y position
-#                                 grid_x=grid_x,  # Grid column index (0 to grid_size-1)
-#                                 grid_y=grid_y,  # Grid row index (0 to grid_size-1)
-#                                 player_assignment=player_num,
-#                             )
-
-#             return redirect('jigsaw_puzzle:waiting_room', room_id=puzzle_room.id)
-#     else:
-#         form = JigsawPuzzleRoomForm()
-#     return render(request, 'jigsaw_puzzle/create_room.html', {'form': form})
 
 def generate_test_data():
     difficulties = ["easy", "medium", "hard"]
@@ -992,10 +868,9 @@ def shuffle_pieces(room):
     # Shuffle the pieces
     random.shuffle(pieces)
     
-    # Assign random positions (or another way to ensure they are shuffled but not placed)
     for index, piece in enumerate(pieces):
-        piece.initial_x = random.randint(0, 300)  # Example random x position
-        piece.initial_y = random.randint(0, 300)  # Example random y position
+        piece.initial_x = random.randint(0, 300)
+        piece.initial_y = random.randint(0, 300)
         piece.save()
 
     # Return the shuffled pieces
