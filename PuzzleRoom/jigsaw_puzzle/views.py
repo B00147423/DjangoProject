@@ -259,6 +259,70 @@ def create_jigsaw_room(request):
         form = JigsawPuzzleRoomForm()
     return render(request, 'jigsaw_puzzle/create_room.html', {'form': form})
 
+@csrf_exempt
+@login_required
+def create_room_with_image(request):
+    if request.method == 'POST':
+        image_path = request.POST.get('image_path')  # e.g. 'jigsaw_puzzle/predefined_images/puppy.jpg'
+        difficulty = request.POST.get('difficulty', 'easy')
+        mode = request.POST.get('mode', 'collaborative')
+
+        room = JigsawPuzzleRoom.objects.create(
+            player1=request.user,
+            difficulty=difficulty,
+            mode=mode,
+            puzzle_image=image_path,
+        )
+
+        # Get the base name of the image (e.g. 'puppy')
+        base_name = os.path.splitext(os.path.basename(image_path))[0]
+        grid_sizes = {'easy': 4, 'medium': 6, 'hard': 8}
+        grid_size = grid_sizes[difficulty]
+
+        # Path to the pre-split pieces
+        pieces_dir = os.path.join(
+            settings.BASE_DIR, 'jigsaw_puzzle', 'static', 'jigsaw_puzzle', 'predefined_pieces', f"{base_name}_{difficulty}"
+        )
+
+        container_size = 400  # or whatever you use
+        base_grid_size = container_size // grid_size
+
+        if mode == 'collaborative':
+            for i in range(grid_size):
+                for j in range(grid_size):
+                    piece_filename = f"{i}_{j}.png"
+                    # The path relative to MEDIA_ROOT
+                    static_piece_path = f"predefined_pieces/{base_name}_{difficulty}/{piece_filename}"
+                    JigsawPuzzlePiece.objects.create(
+                        room=room,
+                        image_piece=static_piece_path,
+                        x_position=random.randint(0, container_size - base_grid_size),
+                        y_position=random.randint(0, container_size - base_grid_size),
+                        initial_x=random.randint(0, container_size - base_grid_size),
+                        initial_y=random.randint(0, container_size - base_grid_size),
+                        grid_x=j,
+                        grid_y=i,
+                    )
+        else:
+            for player_num in ['player1', 'player2']:
+                for i in range(grid_size):
+                    for j in range(grid_size):
+                        piece_filename = f"{i}_{j}.png"
+                        static_piece_path = f"predefined_pieces/{base_name}_{difficulty}/{piece_filename}"
+                        JigsawPuzzlePiece.objects.create(
+                            room=room,
+                            image_piece=static_piece_path,
+                            x_position=random.randint(0, container_size - base_grid_size),
+                            y_position=random.randint(0, container_size - base_grid_size),
+                            initial_x=0,
+                            initial_y=0,
+                            grid_x=j,
+                            grid_y=i,
+                            player_assignment=player_num,
+                        )
+
+        return redirect('jigsaw_puzzle:waiting_room', room_id=room.id)
+    return redirect('jigsaw_puzzle:choose_puzzle')
 
 def save_puzzle_piece(piece_data):
     """Helper function to save puzzle piece."""
@@ -639,7 +703,7 @@ def save_puzzle_piece(piece_data):
     fs = FileSystemStorage(location=os.path.join(settings.MEDIA_ROOT, 'jigsaw_pieces'))
     with open(piece_data['path'], 'rb') as piece_file:
         filename = fs.save(piece_data['file_name'], File(piece_file))
-        return filename  # Return only the filename
+        return filename 
     
 @login_required
 def waiting_room(request, room_id):
@@ -890,3 +954,11 @@ def completed_puzzles(request):
     completed_rooms = JigsawPuzzleRoom.objects.filter(completed=True).select_related('player1', 'player2')
     return render(request, 'jigsaw_puzzle/completed_puzzles.html', {'completed_rooms': completed_rooms})
 
+@login_required
+def choose_puzzle(request):
+    images_dir = os.path.join(
+        settings.BASE_DIR, 'jigsaw_puzzle', 'static', 'jigsaw_puzzle', 'predefined_images'
+    )
+    image_files = [f for f in os.listdir(images_dir) if f.lower().endswith(('.png', '.jpg', '.jpeg'))]
+    image_urls = [f'jigsaw_puzzle/predefined_images/{img}' for img in image_files]
+    return render(request, 'jigsaw_puzzle/choose_puzzle.html', {'image_urls': image_urls})

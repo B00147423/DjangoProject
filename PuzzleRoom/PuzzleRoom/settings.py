@@ -15,10 +15,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
-# SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = 'django-insecure-)ytjp2gmp_r3psh*=8swqdck-lvhn(4h5)5iiblap16c5ye9jh'
 
-# SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
 ALLOWED_HOSTS = ["*"]
@@ -308,7 +306,7 @@ MESSAGE_TAGS = {
 SENDGRID_API_KEY = os.getenv('SENDGRID_API_KEY')
 
 # Email settings for SendGrid
-DEFAULT_FROM_EMAIL = 'b00147423@mytudublin.ie'  # Your verified sender email
+DEFAULT_FROM_EMAIL = 'bbetsunaidze@hotmail.com'  # Your verified sender email
 EMAIL_HOST = 'smtp.sendgrid.net'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
@@ -324,3 +322,5 @@ LOGIN_URL = '/user/auth/'
 
 USE_I18N = True
 USE_L10N = True
+
+print("SENDGRID_API_KEY in Django:", repr(SENDGRID_API_KEY))

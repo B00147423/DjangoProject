@@ -169,6 +169,17 @@ body {
   display: none;
 }
 
+.sidebar.collapsed ul li a {
+  justify-content: center;
+  padding: 0;
+}
+.sidebar.collapsed ul li i {
+  margin: 0;
+}
+.sidebar.collapsed ul li span {
+  display: none;
+}
+
 /* Mobile styles */
 @media (max-width: 768px) {
   .sidebar {
@@ -195,17 +206,10 @@ body {
 /* Main Content Area */
 .main-content {
   flex: 1;
-  margin-left: var(--sidebar-width);
   padding: 2rem;
   min-height: 100vh;
-  transition: margin-left var(--transition-speed) ease;
-  width: calc(100% - var(--sidebar-width));
   background: linear-gradient(135deg, #0a0a1f 0%, #1a1a2e 100%);
-}
-
-.sidebar.collapsed ~ .main-content {
-  margin-left: var(--sidebar-collapsed-width);
-  width: calc(100% - var(--sidebar-collapsed-width));
+  transition: filter 0.3s;
 }
 
 /* Tooltip for collapsed sidebar */
@@ -272,4 +276,23 @@ body {
     --text-secondary: #e5e7eb;
     --card-bg: #1f2937;
   }
+}
+
+.sidebar ul li a.active,
+.sidebar ul li a:hover {
+  box-shadow: 0 0 20px #0ff8, 0 0 8px #0ff4;
+}
+
+body.sidebar-open .main-content {
+  filter: blur(2px) brightness(0.7);
+  pointer-events: none;
+}
+
+.sidebar .nav-item .user-profile span {
+  display: inline-block;
+  max-width: 120px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  vertical-align: middle;
 }

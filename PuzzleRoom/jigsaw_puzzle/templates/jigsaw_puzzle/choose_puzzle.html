@@ -1,0 +1,30 @@
+{% load static %}
+<h1>Choose a Puzzle</h1>
+<div style="display: flex; flex-wrap: wrap;">
+  {% for img_url in image_urls %}
+    <div style="margin: 10px; text-align: center;">
+      <img src="{% static img_url %}" alt="Puzzle" style="width: 200px; height: 200px; object-fit: cover; border-radius: 10px; box-shadow: 0 2px 8px #aaa;">
+      <div style="margin-top: 5px; font-weight: bold;">{{ img_url|cut:"jigsaw_puzzle/predefined_images/"|cut:".jpg"|cut:".png"|cut:".jpeg" }}</div>
+      <form method="post" action="{% url 'jigsaw_puzzle:create_room_with_image' %}">
+        {% csrf_token %}
+        <input type="hidden" name="image_path" value="{{ img_url }}">
+        <label>
+            Difficulty:
+            <select name="difficulty" required>
+                <option value="easy">Easy</option>
+                <option value="medium">Medium</option>
+                <option value="hard">Hard</option>
+            </select>
+        </label>
+        <label>
+            Mode:
+            <select name="mode" required>
+                <option value="collaborative">Collaborative</option>
+                <option value="versus">Versus (1v1)</option>
+            </select>
+        </label>
+        <button type="submit">Play</button>
+      </form>
+    </div>
+  {% endfor %}
+</div>

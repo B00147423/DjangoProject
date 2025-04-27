@@ -31,6 +31,8 @@ import string
 import re
 from django.views.decorators.csrf import csrf_protect
 from django.core.exceptions import ObjectDoesNotExist
+import os
+
 @login_required
 @receiver(post_save, sender=settings.AUTH_USER_MODEL)
 def create_or_update_user_profile(sender, instance, created, **kwargs):
@@ -330,34 +332,60 @@ def auth_page(request):
         return render(request, 'user/auth_page.html', {'form': 'signin'})
 
 def logout_page(request):
-    # Get the current user
     user = request.user
 
-    # Log the user out
     logout(request)
 
-    # If the user is a guest, delete their account
     if getattr(user, 'is_guest', False):
         user.delete()
 
-    # Delete the guest cookie
     response = redirect('user:auth_page')
-    response.delete_cookie('guest_user')  # Remove the guest cookie
+    response.delete_cookie('guest_user')  
 
     return response
 
 @login_required
 def dashboard_page(request):
     user = request.user
-    # Skip verification check for guest users
     if not user.is_guest and not user.is_verified:
-        # Redirect the user to a pending verification page if the email is not verified
         return redirect('user:pending_verification')
 
-    # If the user is verified or a guest, proceed to render the dashboard
+    
+    images_dir = os.path.join(
+        settings.BASE_DIR, 'jigsaw_puzzle', 'static', 'jigsaw_puzzle', 'predefined_images'
+    )
+    image_files = [f for f in os.listdir(images_dir) if f.lower().endswith(('.png', '.jpg', '.jpeg'))]
+    image_urls = [f'jigsaw_puzzle/predefined_images/{img}' for img in image_files]
+
+    # Example mapping by filename
+    CATEGORY_MAP = {
+        # Animals
+        'puppy': 'animals',
+        'animaltwo': 'animals',
+        'animalthree': 'animals',
+
+        # Nature
+        'natureone': 'nature',
+        'naturetwo': 'nature',
+        'naturethree': 'nature',
+
+        # Art
+        'artone': 'art',
+        'arttwo': 'art',
+        'artthree': 'art',
+    }
+
+    image_data = []
+    for img in image_files:
+        base = img.lower().split('.')[0]
+        category = CATEGORY_MAP.get(base, 'all')
+        image_data.append({'url': f'jigsaw_puzzle/predefined_images/{img}', 'category': category})
+
     context = {
         'is_guest': user.is_guest,
         'username': user.username,
+        'image_urls': image_urls,
+        'image_data': image_data,
     }
     return render(request, 'user/dashboard.html', context)
 

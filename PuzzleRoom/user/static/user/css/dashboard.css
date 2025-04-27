@@ -1,0 +1,428 @@
+/* dashboard.css */
+.main-content {
+    padding: 2rem;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.dashboard-header {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.dashboard-title {
+    font-family: "Orbitron", sans-serif;
+    font-size: 3rem;
+    font-weight: 700;
+    color: #0ff; /* Neon blue */
+    text-shadow: 0 0 10px #0ff, 0 0 20px #0ff4;
+    margin-bottom: 0.5rem;
+    letter-spacing: 2px;
+}
+
+.dashboard-tabs {
+    display: flex;
+    justify-content: center;
+    margin: 1.5rem 0;
+    gap: 2rem;
+}
+
+.tab-btn {
+    padding: 0.75rem 1.5rem;
+    background: none;
+    border: none;
+    border-bottom: 3px solid transparent;
+    font-size: 1.2rem;
+    cursor: pointer;
+    color: #fff; /* Make tab text white by default */
+    font-family: "Orbitron", sans-serif;
+    font-weight: 600;
+    letter-spacing: 1px;
+    transition: all 0.3s ease;
+    text-shadow: 0 0 8px #0ff2;
+}
+
+.tab-btn.active {
+    border-bottom: 3px solid #0ff;
+    color: #0ff;
+    text-shadow: 0 0 12px #0ff, 0 0 24px #0ff4;
+}
+
+.tab-content {
+    display: none;
+}
+
+.tab-content.active {
+    display: block;
+}
+
+.puzzle-categories {
+    margin-bottom: 2rem;
+    text-align: center;
+}
+
+.puzzle-categories h2 {
+    color: #fff;
+    font-family: "Orbitron", sans-serif;
+    font-size: 2rem;
+    font-weight: 700;
+    text-shadow: 0 0 8px #0ff2;
+    margin-bottom: 1rem;
+}
+
+.category-buttons {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 1rem;
+}
+
+.category-btn {
+    padding: 0.5rem 1.2rem;
+    border: 1.5px solid #0ff;
+    border-radius: 20px;
+    background: none;
+    color: #fff; /* White text */
+    font-family: "Orbitron", sans-serif;
+    font-size: 1rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin: 0 0.2rem;
+    text-shadow: 0 0 6px #0ff2;
+}
+
+.category-btn.active {
+    background: #0ff;
+    color: #181c2f; /* Dark text on neon background */
+    border-color: #0ff;
+    text-shadow: none;
+}
+
+.puzzle-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 1.5rem;
+    margin-top: 1rem;
+}
+
+.puzzle-card {
+    position: relative;
+    border-radius: 16px;
+    overflow: hidden;
+    background: var(--card-bg);
+    box-shadow: 0 0 24px rgba(0,255,157,0.08);
+    transition: transform 0.3s, box-shadow 0.3s;
+    min-height: 260px;
+}
+
+.puzzle-card:hover {
+    transform: translateY(-8px) scale(1.03);
+    box-shadow: 0 0 40px #0ff4, 0 2px 16px #0ff2;
+}
+
+.puzzle-image-container {
+    position: relative;
+    width: 100%;
+    height: 220px;
+    overflow: hidden;
+}
+
+.puzzle-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    border-radius: 16px;
+}
+
+.puzzle-overlay {
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(10, 20, 40, 0.82);
+    color: #fff;
+    padding: 1.5rem 1.2rem 1.2rem 1.2rem;
+    opacity: 0;
+    border-radius: 16px;
+    transition: opacity 0.3s;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    box-shadow: 0 0 24px #0ff2;
+}
+
+.puzzle-card:hover .puzzle-overlay,
+.puzzle-card:focus-within .puzzle-overlay {
+    opacity: 1;
+}
+
+.puzzle-overlay h3 {
+    margin: 0 0 1rem 0;
+    color: #0ff;
+    font-family: "Orbitron", sans-serif;
+    font-size: 1.3rem;
+    font-weight: bold;
+    letter-spacing: 1px;
+    text-shadow: 0 0 8px #0ff8;
+}
+
+.puzzle-form {
+    margin-top: 0.5rem;
+}
+
+.form-group label {
+    color: #0ff;
+    font-size: 1rem;
+    margin-bottom: 0.2rem;
+    font-family: "Orbitron", sans-serif;
+}
+
+.form-group select {
+    width: 100%;
+    padding: 0.5rem;
+    border-radius: 6px;
+    border: none;
+    background: #23263a;
+    color: #fff;
+    margin-bottom: 0.7rem;
+    font-size: 1rem;
+}
+
+.play-btn {
+    width: 100%;
+    padding: 0.8rem 0;
+    background: #0ff;
+    color: #181c2f;
+    border: none;
+    border-radius: 6px;
+    font-weight: bold;
+    font-size: 1.1rem;
+    cursor: pointer;
+    margin-top: 0.5rem;
+    transition: background 0.2s, color 0.2s;
+    box-shadow: 0 2px 8px #0ff2;
+}
+
+.play-btn:hover {
+    background: #0dd;
+    color: #fff;
+}
+
+/* --- CREATE YOUR OWN PUZZLE CARDS --- */
+.option-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 2.5rem;
+    margin-top: 2.5rem;
+    justify-items: center;
+}
+
+.option-card {
+    background: var(--card-bg, #181c2f);
+    border-radius: 24px;
+    padding: 2.5rem 2rem 2rem 2rem;
+    text-align: center;
+    box-shadow: 0 0 40px #0ff4, 0 2px 16px #0ff2;
+    border: 2.5px solid #0ff;
+    transition: transform 0.3s, box-shadow 0.3s, border-color 0.3s;
+    min-width: 280px;
+    max-width: 400px;
+    margin: 0 auto;
+    font-family: "Orbitron", "Poppins", sans-serif;
+}
+
+.option-card:hover {
+    transform: translateY(-10px) scale(1.03);
+    box-shadow: 0 0 60px #0ff8, 0 4px 24px #0ff4;
+    border-color: #0ff;
+}
+
+.option-icon {
+    font-size: 3.5rem;
+    margin-bottom: 1.2rem;
+    text-shadow: 0 0 16px #0ff8, 0 0 32px #0ff4;
+    display: block;
+}
+
+.option-card h3 {
+    color: #0ff;
+    font-size: 1.6rem;
+    font-family: "Orbitron", sans-serif;
+    font-weight: bold;
+    margin-bottom: 0.7rem;
+    letter-spacing: 1px;
+    text-shadow: 0 0 10px #0ff8;
+}
+
+.option-card p {
+    color: #fff;
+    font-size: 1.1rem;
+    font-family: "Poppins", sans-serif;
+    margin-bottom: 1.5rem;
+    opacity: 0.92;
+}
+
+.option-btn {
+    margin-top: 1.2rem;
+    padding: 0.9rem 1.5rem;
+    background: #0ff;
+    color: #181c2f;
+    border: none;
+    border-radius: 10px;
+    font-weight: bold;
+    font-size: 1.1rem;
+    font-family: "Orbitron", sans-serif;
+    letter-spacing: 1px;
+    cursor: pointer;
+    box-shadow: 0 2px 16px #0ff2;
+    transition: background 0.2s, color 0.2s, box-shadow 0.2s;
+    text-shadow: 0 0 8px #0ff4;
+}
+
+.option-btn:hover {
+    background: #0dd;
+    color: #fff;
+    box-shadow: 0 0 32px #0ff8;
+}
+
+/* --- MODAL STYLES --- */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0; top: 0; width: 100vw; height: 100vh;
+    background: rgba(10, 20, 40, 0.96);
+    justify-content: center;
+    align-items: center;
+    transition: background 0.3s;
+}
+
+.modal.show {
+    display: flex;
+}
+
+.modal-content {
+    position: relative;
+    background: var(--card-bg, #181c2f);
+    color: #fff;
+    border-radius: 24px;
+    box-shadow: 0 0 40px #0ff8, 0 2px 16px #0ff2;
+    padding: 2.5rem 2rem 2rem 2rem;
+    min-width: 350px;
+    max-width: 95vw;
+    width: 100%;
+    max-width: 420px;
+    text-align: left;
+    border: 2.5px solid #0ff;
+    font-family: "Orbitron", "Poppins", sans-serif;
+    animation: modalPop 0.25s cubic-bezier(.4,2,.6,1) both;
+}
+
+@keyframes modalPop {
+    0% { transform: scale(0.9) translateY(40px); opacity: 0; }
+    100% { transform: scale(1) translateY(0); opacity: 1; }
+}
+
+.close {
+    position: absolute;
+    right: 1.2em;
+    top: 1.2em;
+    cursor: pointer;
+    font-size: 2em;
+    color: #0ff;
+    transition: color 0.2s, background 0.2s;
+    z-index: 10;
+    border-radius: 50%;
+    background: rgba(0,255,255,0.10);
+    width: 44px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 0 12px #0ff4;
+}
+.close:hover {
+    color: #fff;
+    background: rgba(0,255,255,0.22);
+}
+
+.modal-content h2 {
+    margin-top: 0;
+    margin-bottom: 1.5rem;
+    color: #0ff;
+    font-size: 2rem;
+    font-family: "Orbitron", sans-serif;
+    font-weight: bold;
+    letter-spacing: 1.5px;
+    text-shadow: 0 0 16px #0ff8, 0 0 32px #0ff4;
+}
+
+.modal-content label {
+    display: block;
+    margin-bottom: 0.3rem;
+    color: #0ff;
+    font-size: 1.1rem;
+    font-family: "Orbitron", sans-serif;
+    font-weight: 500;
+    letter-spacing: 1px;
+}
+
+.modal-content input[type="text"],
+.modal-content input[type="file"],
+.modal-content select {
+    width: 100%;
+    padding: 0.9rem 1.1rem;
+    margin-bottom: 1.2rem;
+    border-radius: 10px;
+    border: 2px solid #0ff;
+    background: #23263a;
+    color: #fff;
+    font-size: 1.1rem;
+    outline: none;
+    transition: box-shadow 0.2s, border 0.2s;
+    font-family: "Poppins", sans-serif;
+    box-shadow: 0 1px 12px #0ff2;
+}
+
+.modal-content input[type="text"]:focus,
+.modal-content input[type="file"]:focus,
+.modal-content select:focus {
+    border-color: #0ff;
+    box-shadow: 0 0 0 2.5px #0ff;
+}
+
+.modal-content button.btn,
+.modal-content button[type="submit"] {
+    width: 100%;
+    padding: 1rem 0;
+    background: #0ff;
+    color: #181c2f;
+    border: none;
+    border-radius: 10px;
+    font-weight: bold;
+    font-size: 1.2rem;
+    cursor: pointer;
+    margin-top: 0.7rem;
+    transition: background 0.2s, color 0.2s, box-shadow 0.2s;
+    box-shadow: 0 2px 16px #0ff2;
+    font-family: "Orbitron", sans-serif;
+    letter-spacing: 1.2px;
+    text-shadow: 0 0 8px #0ff4;
+}
+
+.modal-content button.btn:hover,
+.modal-content button[type="submit"]:hover {
+    background: #0dd;
+    color: #fff;
+    box-shadow: 0 0 32px #0ff8;
+}
+
+.puzzle-options h2 {
+    color: #fff;
+    font-family: "Orbitron", sans-serif;
+    font-size: 2rem;
+    font-weight: 700;
+    text-shadow: 0 0 8px #0ff2;
+    margin-bottom: 1rem;
+}

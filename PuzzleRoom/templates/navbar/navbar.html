@@ -54,12 +54,24 @@
                     <span>Settings</span>
                 </a>
             </li>
+            <li class="nav-item" data-tooltip="LeaderBoard">
+                <a href="{% url 'jigsaw_puzzle:leaderboard' %}">
+                    <span>LeaderBoard</span>
+                </a>
+            </li>
+            <li class="nav-item" data-tooltip="Join Room">
+                <a href="#" onclick="toggleModal('joinRoomModal'); return false;">
+                    <i class="fas fa-users"></i>
+                    <span>Join Room</span>
+                </a>
+            </li>
             <li class="nav-item" data-tooltip="Logout">
                 <a href="{% url 'user:logout_page' %}">
                     <i class='bx bxs-log-out'></i>
                     <span>Logout</span>
                 </a>
             </li>
+            
             {% else %}
             <li class="nav-item" data-tooltip="Login">
                 <a href="{% url 'user:auth_page' %}">

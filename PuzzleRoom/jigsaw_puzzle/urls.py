@@ -17,5 +17,7 @@ urlpatterns = [
     path('get_remaining_time/<int:room_id>/', views.get_remaining_time, name='get_remaining_time'),
     path('completed_puzzles/', views.completed_puzzles, name='completed_puzzles'), 
     path('leaderboard/', views.leaderboard, name='leaderboard'),
+    path('choose_puzzle/', views.choose_puzzle, name='choose_puzzle'),
+    path('create_room_with_image/', views.create_room_with_image, name='create_room_with_image'),
 ]
 

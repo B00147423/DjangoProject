@@ -4,147 +4,212 @@
 {% block title %}Puzzle Room Dashboard{% endblock %}
 
 {% block extra_head %}
-<link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+<link rel="stylesheet" href="{% static 'user/css/dashboard.css' %}">
 <script src="{% static 'user/js/dashboard.js' %}"></script>
 <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-<link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
 {% endblock %}
 
 {% block content %}
 <div class="main-content">
     <div class="dashboard-header">
-        <h1 class="dashboard-title">Welcome to Puzzle Room</h1>
-        <p class="dashboard-subtitle">Choose your puzzle adventure</p>
-    </div>
-
-    <div class="dashboard-grid">
-        <div class="card">
-            <div class="card-icon">🧩</div>
-            <h2>Create Jigsaw Puzzle</h2>
-            <button onclick="toggleModal('createJigsawRoomModal')" class="btn">
-                Create Jigsaw Room
-            </button>
-        </div>
-
-        <div class="card">
-            <div class="card-icon">⚙️</div>
-            <h2>Create Physics Puzzle</h2>
-            <button onclick="toggleModal('createPhysicsRoomModal')" class="btn">
-                Create Physics Room
-            </button>
-        </div>
-
-        <div class="card">
-            <div class="card-icon">🔢</div>
-            <h2>Create Sliding Puzzle</h2>
-            <button onclick="toggleModal('createSlidingRoomModal')" class="btn">
-                Create Sliding Room
-            </button>
-        </div>
-
-        <div class="card">
-            <div class="card-icon">👥</div>
-            <h2>Join Room</h2>
-            <button onclick="toggleModal('joinRoomModal')" class="btn">
-                Join Existing Room
-            </button>
+        <h1 class="dashboard-title">Puzzle Adventure</h1>
+        <div class="dashboard-tabs">
+            <button class="tab-btn active" onclick="switchTab('predefined')">Puzzle Collection</button>
+            <button class="tab-btn" onclick="switchTab('custom')">Create Custom Puzzle</button>
         </div>
     </div>
 
-    <!-- Create Jigsaw Room Modal -->
-    <div id="createJigsawRoomModal" class="modal">
-        <div class="modal-content">
-            <span class="close" onclick="toggleModal('createJigsawRoomModal')">&times;</span>
-            <h2>Create a New Jigsaw Room</h2>
-            <form id="createJigsawRoomForm" method="post" enctype="multipart/form-data" action="{% url 'create_jigsaw_room' %}">
-                {% csrf_token %}
-                <label for="id_name">Room Name</label>
-                <input type="text" name="name" id="id_name" required>
-                
-                <label for="id_puzzle_image">Puzzle Image</label>
-                <input type="file" name="puzzle_image" id="id_puzzle_image" required>
-                
-                <label for="id_difficulty">Difficulty</label>
-                <select name="difficulty" id="id_difficulty" required>
-                    <option value="easy">Easy</option>
-                    <option value="medium">Medium</option>
-                    <option value="hard">Hard</option>
-                </select>
-                
-                <label for="id_mode">Mode</label>
-                <select name="mode" id="id_mode" required>
-                    <option value="versus">Versus (1v1)</option>
-                    <option value="collaborative">Collaborative</option>
-                </select>
-                
-                <button type="submit" class="btn">Create Room</button>
-            </form>
+    <!-- Predefined Puzzles Tab -->
+    <div id="predefined-tab" class="tab-content active">
+        <div class="puzzle-categories">
+            <h2>Choose a Puzzle Category</h2>
+            <div class="category-buttons">
+                <button class="category-btn active" data-category="all">All</button>
+                <button class="category-btn" data-category="animals">Animals</button>
+                <button class="category-btn" data-category="nature">Nature</button>
+                <button class="category-btn" data-category="art">Art</button>
+            </div>
+        </div>
+
+        <div class="puzzle-grid">
+            {% for img in image_data %}
+                <div class="puzzle-card" data-category="{{ img.category }}">
+                    <div class="puzzle-image-container">
+                        <img src="{% static img.url %}" alt="Puzzle" class="puzzle-image">
+                        <div class="puzzle-overlay">
+                            <h3>{{ img.url|cut:"jigsaw_puzzle/predefined_images/"|cut:".jpg"|cut:".png"|cut:".jpeg" }}</h3>
+                            <form method="post" action="{% url 'jigsaw_puzzle:create_room_with_image' %}" class="puzzle-form">
+                                {% csrf_token %}
+                                <div class="form-group">
+                                    <label>Difficulty:</label>
+                                    <select name="difficulty" required>
+                                        <option value="easy">Easy</option>
+                                        <option value="medium">Medium</option>
+                                        <option value="hard">Hard</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label>Mode:</label>
+                                    <select name="mode" required>
+                                        <option value="collaborative">Collaborative</option>
+                                        <option value="versus">Versus (1v1)</option>
+                                    </select>
+                                </div>
+                                <input type="hidden" name="image_path" value="{{ img.url }}">
+                                <button type="submit" class="play-btn">Play Now</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
         </div>
     </div>
 
-    <!-- Create Sliding Room Modal -->
-    <div id="createSlidingRoomModal" class="modal">
-        <div class="modal-content">
-            <span class="close" onclick="toggleModal('createSlidingRoomModal')">&times;</span>
-            <h2>Create a New Sliding Room</h2>
-            <form id="createSlidingRoomForm" method="post" enctype="multipart/form-data" action="{% url 'sliding_puzzle:create_room' %}">
-                {% csrf_token %}
-                
-                <label for="roomName">Room Name</label>
-                <input type="text" name="roomName" id="roomName" required>
-            
-                <label for="puzzleImage">Puzzle Image</label>
-                <input type="file" name="puzzleImage" id="puzzleImage" required>
-            
-                <label for="difficulty">Difficulty</label>
-                <select name="difficulty" id="difficulty" required>
-                    <option value="easy">Easy</option>
-                    <option value="medium">Medium</option>
-                    <option value="hard">Hard</option>
-                </select>
-            
-                <button type="submit" class="btn">Create Room</button>
-            </form>
-        </div>
-    </div>
+    <!-- Custom Puzzle Tab -->
+    <div id="custom-tab" class="tab-content">
+        <div class="puzzle-options">
+            <h2>Create Your Own Puzzle</h2>
+            <div class="option-cards">
+                <div class="option-card">
+                    <div class="option-icon">🧩</div>
+                    <h3>Jigsaw Puzzle</h3>
+                    <p>Upload any image to create a classic jigsaw puzzle</p>
+                    <button onclick="toggleModal('createJigsawRoomModal')" class="option-btn">
+                        Create Jigsaw
+                    </button>
+                </div>
 
-    <!-- Create Physics Room Modal -->
-    <div id="createPhysicsRoomModal" class="modal">
-        <div class="modal-content">
-            <span class="close" onclick="toggleModal('createPhysicsRoomModal')">&times;</span>
-            <h2>Create a New Physics Puzzle Room</h2>
-            <form id="createPhysicsRoomForm" method="post" enctype="multipart/form-data" action="{% url 'physics_puzzle:create_physics_room' %}">
-                {% csrf_token %}
-                <label for="id_name">Room Name</label>
-                <input type="text" name="name" id="id_name" required>
-
-                <label for="id_puzzle_image">Puzzle Image</label>
-                <input type="file" name="puzzle_image" id="id_puzzle_image" required>
-
-                <button type="submit" class="btn">Create Room</button>
-            </form>
-        </div>
-    </div>
-
-    <!-- Join Room Modal -->
-    <div id="joinRoomModal" class="modal">
-        <div class="modal-content">
-            <span class="close" onclick="toggleModal('joinRoomModal')">&times;</span>
-            <h2>Join a Room</h2>
-            <form id="joinRoomForm" method="post" action="{% url 'jigsaw_puzzle:join_room' %}">
-                {% csrf_token %}
-                <label for="room_code">Room Code</label>
-                <input type="text" name="room_code" id="room_code" required>
-                
-                <button type="submit" class="btn">Join Room</button>
-            </form>
+                <div class="option-card">
+                    <div class="option-icon">🔢</div>
+                    <h3>Sliding Puzzle</h3>
+                    <p>Challenge yourself with a sliding tile puzzle</p>
+                    <button onclick="toggleModal('createSlidingRoomModal')" class="option-btn">
+                        Create Sliding Puzzle
+                    </button>
+                </div>
+            </div>
         </div>
     </div>
 </div>
+
+<!-- Modals -->
+<div class="modal" id="createJigsawRoomModal">
+    <div class="modal-content">
+        <span class="close" onclick="toggleModal('createJigsawRoomModal')">&times;</span>
+        <h2>Create a New Jigsaw Room</h2>
+        <form id="createJigsawRoomForm" method="post" enctype="multipart/form-data" action="{% url 'create_jigsaw_room' %}">
+            {% csrf_token %}
+            <label for="id_name">Room Name</label>
+            <input type="text" name="name" id="id_name" required>
+            
+            <label for="id_puzzle_image">Puzzle Image</label>
+            <input type="file" name="puzzle_image" id="id_puzzle_image" required>
+            
+            <label for="id_difficulty">Difficulty</label>
+            <select name="difficulty" id="id_difficulty" required>
+                <option value="easy">Easy</option>
+                <option value="medium">Medium</option>
+                <option value="hard">Hard</option>
+            </select>
+            
+            <label for="id_mode">Mode</label>
+            <select name="mode" id="id_mode" required>
+                <option value="versus">Versus (1v1)</option>
+                <option value="collaborative">Collaborative</option>
+            </select>
+            
+            <button type="submit" class="btn">Create Room</button>
+        </form>
+    </div>
+</div>
+
+<div id="createSlidingRoomModal" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="toggleModal('createSlidingRoomModal')">&times;</span>
+        <h2>Create a New Sliding Room</h2>
+        <form id="createSlidingRoomForm" method="post" enctype="multipart/form-data" action="{% url 'sliding_puzzle:create_room' %}">
+            {% csrf_token %}
+            
+            <label for="roomName">Room Name</label>
+            <input type="text" name="roomName" id="roomName" required>
+        
+            <label for="puzzleImage">Puzzle Image</label>
+            <input type="file" name="puzzleImage" id="puzzleImage" required>
+        
+            <label for="difficulty">Difficulty</label>
+            <select name="difficulty" id="difficulty" required>
+                <option value="easy">Easy</option>
+                <option value="medium">Medium</option>
+                <option value="hard">Hard</option>
+            </select>
+        
+            <button type="submit" class="btn">Create Room</button>
+        </form>
+    </div>
+</div>
+
+<div id="joinRoomModal" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="toggleModal('joinRoomModal')">&times;</span>
+        <h2>Join a Room</h2>
+        <form id="joinRoomForm" method="post" action="{% url 'jigsaw_puzzle:join_room' %}">
+            {% csrf_token %}
+            <label for="room_code">Room Code</label>
+            <input type="text" name="room_code" id="room_code" required>
+            
+            <button type="submit" class="btn">Join Room</button>
+        </form>
+    </div>
+</div>
+
 {% endblock %}
 
 {% block extra_scripts %}
 <script>
+function switchTab(tabName) {
+    // Hide all tab contents
+    document.querySelectorAll('.tab-content').forEach(tab => {
+        tab.classList.remove('active');
+    });
+    
+    // Show selected tab content
+    document.getElementById(`${tabName}-tab`).classList.add('active');
+    
+    // Update active tab button
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.classList.remove('active');
+        if (btn.textContent.toLowerCase().includes(tabName)) {
+            btn.classList.add('active');
+        }
+    });
+}
+
+function filterPuzzles(category) {
+    const puzzles = document.querySelectorAll('.puzzle-card');
+    puzzles.forEach(puzzle => {
+        if (category === 'all' || puzzle.dataset.category === category) {
+            puzzle.style.display = 'block';
+        } else {
+            puzzle.style.display = 'none';
+        }
+    });
+    
+    // Update active category button
+    document.querySelectorAll('.category-btn').forEach(btn => {
+        btn.classList.remove('active');
+        if (btn.dataset.category === category) {
+            btn.classList.add('active');
+        }
+    });
+}
+
+// Initialize category buttons
+document.querySelectorAll('.category-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+        filterPuzzles(this.dataset.category);
+    });
+});
+
 function toggleModal(modalId) {
     var modal = document.getElementById(modalId);
     if (modal.classList.contains('show')) {
