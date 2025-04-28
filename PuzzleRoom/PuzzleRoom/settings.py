@@ -60,8 +60,8 @@ SOCIALACCOUNT_PROVIDERS = {
     'google': {
         'SCOPE': ['profile', 'email'],
         'APP': {
-            'client_id': os.environ.get('CLIENT_ID'),  # Fetch from environment variables
-            'secret': os.environ.get('CLIENT_SECRET'),  # Fetch from environment variables
+            'client_id': os.environ.get('CLIENT_ID'),
+            'secret': os.environ.get('CLIENT_SECRET'),
         },
         'AUTH_PARAMS': {'access_type': 'online'},
     }
@@ -78,16 +78,15 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'allauth.account.middleware.AccountMiddleware', # Required for messages
+    'allauth.account.middleware.AccountMiddleware',
 ]
 
 ROOT_URLCONF = 'PuzzleRoom.urls'
 
 AUTHENTICATION_BACKENDS = (
-    'django.contrib.auth.backends.ModelBackend',  # Django's default
-    'allauth.account.auth_backends.AuthenticationBackend',  # Allauth backend
+    'django.contrib.auth.backends.ModelBackend',
+    'allauth.account.auth_backends.AuthenticationBackend',
 )
-
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
@@ -306,12 +305,12 @@ MESSAGE_TAGS = {
 SENDGRID_API_KEY = os.getenv('SENDGRID_API_KEY')
 
 # Email settings for SendGrid
-DEFAULT_FROM_EMAIL = 'bbetsunaidze@hotmail.com'  # Your verified sender email
+DEFAULT_FROM_EMAIL = 'bbetsunaidze@hotmail.com'
 EMAIL_HOST = 'smtp.sendgrid.net'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
-EMAIL_HOST_USER = 'apikey'  # Always use "apikey" as the user
-EMAIL_HOST_PASSWORD = SENDGRID_API_KEY  # Use the SendGrid API key as the password
+EMAIL_HOST_USER = 'apikey'
+EMAIL_HOST_PASSWORD = SENDGRID_API_KEY
 
 
 LANGUAGES = [

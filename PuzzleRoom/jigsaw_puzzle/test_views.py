@@ -30,4 +30,4 @@ class PuzzleStateTests(TestCase):
         )
         self.assertEqual(response.status_code, 200)
         updated_piece = PuzzlePiece.objects.get(number=1)
-        self.assertEqual(updated_piece.current_col, 1)  # Moved to position 2
+        self.assertEqual(updated_piece.current_col, 1) 

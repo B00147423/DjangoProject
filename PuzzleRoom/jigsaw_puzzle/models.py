@@ -33,10 +33,10 @@ class JigsawPuzzleRoom(models.Model):
     room_code = models.CharField(max_length=8, unique=True, blank=True, null=True)
     player1_ready = models.BooleanField(default=False)
     player2_ready = models.BooleanField(default=False)
-        # Add fields for the timer
+
     start_time = models.DateTimeField(null=True, blank=True)
     total_duration = models.IntegerField(default=2700)
-        # **THIS FIELD MIGHT BE MISSING**
+
     completed = models.BooleanField(default=False)
     moves_taken = models.IntegerField(default=0)
     completion_time = models.IntegerField(default=0)
@@ -96,11 +96,9 @@ class JigsawPuzzleRoom(models.Model):
                 os.remove(piece.image_piece.path)
             piece.delete()
         
-        # Delete the uploaded puzzle image
         if self.puzzle_image and os.path.exists(self.puzzle_image.path):
             os.remove(self.puzzle_image.path)
         
-        # Finally, delete the room itself
         self.delete()
     
 
@@ -115,10 +113,10 @@ class JigsawPuzzlePiece(models.Model):
     initial_y = models.IntegerField(null=False, blank=False, default=0)
     is_correct = models.BooleanField(default=False)
     is_placed = models.BooleanField(default=False)
-    grid_x = models.IntegerField(null=False, blank=False, default=0)  # Intended grid position
-    grid_y = models.IntegerField(null=False, blank=False, default=0)  # Intended grid position
-    placed_by = models.CharField(max_length=50, null=True, blank=True)  # Increased max_length
-    player_assignment = models.CharField(max_length=15, null=True)  # Increased max_length
+    grid_x = models.IntegerField(null=False, blank=False, default=0)
+    grid_y = models.IntegerField(null=False, blank=False, default=0)
+    placed_by = models.CharField(max_length=50, null=True, blank=True)  
+    player_assignment = models.CharField(max_length=15, null=True) 
     locked_by = models.CharField(max_length=100, null=True, blank=True)
     edges = models.JSONField(default=dict, null=True, blank=True)
     player_assignment = models.CharField(max_length=15, choices=[('player1', 'Player 1'), ('player2', 'Player 2')], null=True)
@@ -161,8 +159,8 @@ class ChatMessage(models.Model):
 class Leaderboard(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     room = models.ForeignKey(JigsawPuzzleRoom, on_delete=models.CASCADE)
-    completion_time = models.IntegerField()  # Time in seconds
-    moves_taken = models.IntegerField()  # Number of moves taken
+    completion_time = models.IntegerField()
+    moves_taken = models.IntegerField()
     date = models.DateTimeField(auto_now_add=True)
 
     class Meta:

@@ -528,18 +528,14 @@ class PuzzleConsumer(AsyncWebsocketConsumer):
             room.start_time = timezone.now()
             await database_sync_to_async(room.save)()
 
-        # Calculate completion time
         elapsed_time = (timezone.now() - room.start_time).total_seconds()
-        # Ensure moves_taken is counted
         moves_taken = room.moves_taken  
 
-        # Save completion time and moves
         room.completed = True
         room.completion_time = int(elapsed_time)
         await database_sync_to_async(room.save)()
         logger.info(f"📡 Sending puzzle completion event: {elapsed_time} seconds, {moves_taken} moves")
 
-        # Send completion event
         await self.channel_layer.group_send(
             self.room_group_name,
             {

@@ -449,16 +449,16 @@ def change_email(request):
 @login_required
 def change_password(request):
     if request.method == 'POST':
-        print("Processing password change...")  # Debugging
+        print("Processing password change...")
         form = CustomPasswordChangeForm(request.user, request.POST)
         if form.is_valid():
             user = form.save()
-            update_session_auth_hash(request, user)  # Keep the user logged in
-            print("Password changed successfully!")  # Debugging
+            update_session_auth_hash(request, user)
+            print("Password changed successfully!")
             messages.success(request, 'Your password has been changed successfully.')
             return redirect('user:settings')
         else:
-            print("Form errors:", form.errors)  # Debugging
+            print("Form errors:", form.errors)
             messages.error(request, 'There was an issue updating your password.')
     else:
         form = CustomPasswordChangeForm(request.user)
@@ -468,23 +468,19 @@ def change_password(request):
 
 @login_required
 def resend_verification_email(request):
-    # Check if the user is already verified
     if request.user.is_verified:
         messages.success(request, "Your email is already verified.")
-        return redirect('user:dashboard')  # Redirect to the dashboard if already verified
+        return redirect('user:dashboard')
 
-    # Try sending the verification email
     try:
         if send_verification_email(request.user, request):
             messages.info(request, "A new verification email has been sent. Please check your inbox.")
         else:
             messages.error(request, "Failed to send the verification email. Please try again later.")
     except Exception as e:
-        # Log the exception for debugging purposes
         print(f"Error sending verification email: {str(e)}")
         messages.error(request, "An unexpected error occurred. Please try again later.")
 
-    # Redirect to the pending verification page
     return redirect('user:pending_verification')
 
 @login_required
