@@ -9,7 +9,6 @@ import io
 import time
 from itertools import product
 
-# Keep your original logging setup
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
@@ -139,7 +138,6 @@ class JigsawPuzzleUser(HttpUser):
                 else:
                     logger.error(f"Failed to create room: {difficulty} {mode} | {response.status_code} | {response.text[:200]}")
 
-    # FIXED VERSION OF YOUR create_and_join_room (minimal changes)
     @task(3)
     def create_and_join_room(self):
         resp = self.client.get("/jigsaw/create_room/jigsaw/")
@@ -184,9 +182,7 @@ class JigsawPuzzleUser(HttpUser):
             else:
                 response.failure(f"Unexpected status (no redirect): {response.status_code} {response.text[:200]}")
 
-        # PRESERVED YOUR ORIGINAL JOIN LOGIC
         if self.room_id:
-            # Get room code from waiting room
             with self.client.get(f"/jigsaw/waiting-room/{self.room_id}/",
                                catch_response=True) as response:
                 if response.status_code == 200:
@@ -195,7 +191,6 @@ class JigsawPuzzleUser(HttpUser):
                         self.room_code = match.group(1)
 
             if self.room_code:
-                # Get CSRF token for join page
                 join_resp = self.client.get("/jigsaw/join_room/")
                 join_csrf = self._extract_csrf(join_resp)
                 
@@ -206,20 +201,18 @@ class JigsawPuzzleUser(HttpUser):
                                     },
                                     headers={
                                         "Referer": f"{self.host}/jigsaw/join_room/",
-                                        "X-CSRFToken": join_csrf  # ADDED
+                                        "X-CSRFToken": join_csrf  
                                     },
                                     catch_response=True) as response:
                     if response.status_code != 200:
                         response.failure(f"Join room failed: {response.text}")
 
-    # PRESERVED YOUR ORIGINAL play_game METHOD
     @task(5)
     def play_game(self):
         """Simulate puzzle gameplay"""
         if not self.room_id:
             return
             
-        # Get CSRF token from room page
         resp = self.client.get(f"/jigsaw/room/{self.room_id}/")
         csrf_token = self._extract_csrf(resp)
         
@@ -240,7 +233,6 @@ class JigsawPuzzleUser(HttpUser):
                 response.failure("Invalid pieces response")
                 return
 
-        # Move random pieces
         for _ in range(random.randint(1, 5)):
             piece = random.choice(pieces)
             with self.client.post("/jigsaw/update_piece_position/",
@@ -259,11 +251,9 @@ class JigsawPuzzleUser(HttpUser):
                 if response.status_code != 200:
                     response.failure(f"Move piece failed: {response.text}")
 
-            # Random chat messages
             if random.random() < 0.3:
                 self.send_chat_message(csrf_token)
 
-    # PRESERVED YOUR ORIGINAL view_leaderboard METHOD
     @task(1)
     def view_leaderboard(self):
         """Check the leaderboard"""
@@ -271,11 +261,9 @@ class JigsawPuzzleUser(HttpUser):
                            catch_response=True) as response:
             if response.status_code != 200:
                 response.failure(f"Leaderboard failed: {response.text}")
-            # More flexible content check
             elif not any(x in response.text.lower() for x in ["leaderboard", "ranking"]):
                 response.failure("Leaderboard content missing")
 
-    # PRESERVED YOUR ORIGINAL send_chat_message METHOD
     def send_chat_message(self, csrf_token):
         """Helper method to send chat messages"""
         with self.client.post("/jigsaw/send_message/",
@@ -292,7 +280,6 @@ class JigsawPuzzleUser(HttpUser):
             if response.status_code != 200:
                 response.failure(f"Send message failed: {response.text}")
 
-# PRESERVED YOUR COMPLETE JigsawPuzzleSequentialUser CLASS
 class JigsawPuzzleSequentialUser(HttpUser):
     wait_time = between(1, 3)
     host = "http://localhost:8000"
