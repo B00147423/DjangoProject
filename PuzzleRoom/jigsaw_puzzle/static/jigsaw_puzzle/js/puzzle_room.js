@@ -443,8 +443,8 @@ document.addEventListener('DOMContentLoaded', () => {
     function loadPuzzlePieces(piecesContainerId, piecesData) {
         const piecesContainer = document.getElementById(piecesContainerId);
         const containerRect = piecesContainer.getBoundingClientRect();
-        const pieceSize = 60; // Adjust according to your grid size
-        let nextX = 10; // Initial position
+        const pieceSize = 60; 
+        let nextX = 10;
         let nextY = 10;
     
         if ((playerRole === 'player1' && piecesContainerId === 'player1-pieces') ||
@@ -579,19 +579,18 @@ document.addEventListener('DOMContentLoaded', () => {
         }, 1000);
     }
     
-    // Keep your formatTime function the same
     function formatTime(seconds) {
         const m = Math.floor(seconds / 60);
         const s = seconds % 60;
         return `${m}:${s < 10 ? '0' : ''}${s}`;
     }
 
-    // Function to send a move via WebSocket
+
     function sendMove(pieceId, newX, newY, imageUrl) {
         if (!isWebSocketConnected) {
             return;
         }
-        moveCounter++; // Keep local count, but do NOT update UI directly
+        moveCounter++;
 
         socket.send(JSON.stringify({
             'type': 'piece_move',
@@ -601,11 +600,11 @@ document.addEventListener('DOMContentLoaded', () => {
             'player_role': playerRole,
             'image_url': imageUrl,
             'base_grid_size': baseGridSize,
-            'moves_taken': moveCounter  // Send move count
+            'moves_taken': moveCounter 
         }));
     }
 
-    // Function to check if a piece is in the correct position
+
     function checkPiecePosition(pieceId, x, y) {
         const piece = pieces.find(p => p.id === pieceId);
         if (piece) {
@@ -616,7 +615,6 @@ document.addEventListener('DOMContentLoaded', () => {
             // The backend already provides grid positions in grid coordinates
             const expectedGridX = piece.grid_x;
             const expectedGridY = piece.grid_y;
-
 
             // Compare the grid positions
             const isCorrect = (currentGridX === expectedGridX && currentGridY === expectedGridY);

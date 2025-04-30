@@ -27,7 +27,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    // Make toggleReady a global function so it can be called from the button onclick attribute
     window.toggleReady = function() {
         isReady = !isReady;
         socket.send(JSON.stringify({

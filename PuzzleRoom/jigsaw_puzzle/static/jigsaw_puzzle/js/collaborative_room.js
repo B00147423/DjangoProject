@@ -142,9 +142,9 @@ document.addEventListener("DOMContentLoaded", () => {
                     piece.is_correct = data.is_correct;
                 }
     
-                setTimeout(checkPuzzleCompletion, 50); // Ensures updates are applied first
+                setTimeout(checkPuzzleCompletion, 50);
     
-                // Send confirmation if the piece is correct
+
                 if (data.is_correct) {
                     socket.send(JSON.stringify({ type: "confirm_piece", piece_id: data.piece_id }));
                 }
@@ -211,7 +211,7 @@ document.addEventListener("DOMContentLoaded", () => {
             pieceElement.setAttribute("data-locked-by", lockedBy);
     
             if (lockedBy !== playerRole) {
-                pieceElement.style.opacity = "0.5"; // Grey out for other player
+                pieceElement.style.opacity = "0.5";
             }
         } 
     }
@@ -458,23 +458,20 @@ document.addEventListener("DOMContentLoaded", () => {
             const imageNode = new Konva.Image({
                 x: x,
                 y: y,
-                width: baseGridSize,  // Size of the piece
-                height: baseGridSize, // Size of the piece
+                width: baseGridSize, 
+                height: baseGridSize,
                 image: imageObj,
                 id: `piece-${pieceId}`,
             });
     
-            // Set up the context menu event to remove the piece
             imageNode.on("contextmenu", (e) => {
                 e.evt.preventDefault();
                 removePiece(pieceId);
             });
     
-            // Add the image node to the Konva layer and draw it
             layer.add(imageNode);
             layer.draw();
     
-            // Check if the piece is in the correct position
             checkPiecePosition(pieceId, x, y);
         };
     

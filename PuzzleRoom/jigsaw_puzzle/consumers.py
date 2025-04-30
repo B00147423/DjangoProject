@@ -26,7 +26,7 @@ class PuzzleConsumer(AsyncWebsocketConsumer):
             self.channel_name
         )
         await self.accept()
-        
+    
         # Load and send the current state of the game
         await self.send_current_state()
 
@@ -208,7 +208,7 @@ class PuzzleConsumer(AsyncWebsocketConsumer):
 
         await self.send(text_data=json.dumps({
             'type': 'puzzle_completed',
-            'winner': event.get('winner', "Unknown"),  # Make sure 'winner' is included
+            'winner': event.get('winner', "Unknown"),
             'message': event['message'],
             'completion_time': event.get('completion_time', 0),
             'moves_taken': event.get('moves_taken', 0),
@@ -224,7 +224,7 @@ class PuzzleConsumer(AsyncWebsocketConsumer):
         
         if room.player1_ready and room.player2_ready:
             if not room.start_time:
-                room.start_time = timezone.now()  # ✅ Set game start time here!
+                room.start_time = timezone.now() 
                 await database_sync_to_async(room.save)()
                 logger.info("🕒 Game started, start_time set!")
 
@@ -346,10 +346,10 @@ class PuzzleConsumer(AsyncWebsocketConsumer):
     def reset_piece_position(self, piece_id):
         """Resets the piece's position to its initial state in the database."""
         piece = JigsawPuzzlePiece.objects.get(id=piece_id)
-        piece.x_position = None  # Reset position
+        piece.x_position = None 
         piece.y_position = None
-        piece.is_placed = False  # Mark as not placed
-        piece.locked_by = None  # Unlock the piece
+        piece.is_placed = False
+        piece.locked_by = None 
         piece.save()
 
 
@@ -399,7 +399,7 @@ class PuzzleConsumer(AsyncWebsocketConsumer):
         expected_x = piece.grid_x * self.base_grid_size
         expected_y = piece.grid_y * self.base_grid_size
         
-        tolerance = 20  # 20px tolerance
+        tolerance = 20 
         if abs(new_x - expected_x) <= tolerance and abs(new_y - expected_y) <= tolerance:
             piece.x_position = new_x
             piece.y_position = new_y

@@ -650,12 +650,11 @@ def generate_test_data():
 
     for difficulty in difficulties:
         for mode in modes:
-            for i in range(1, 51):  # Generate 50 entries for each combination
-                completion_time = random.randint(60, 600)  # Random completion time between 60 and 600 seconds
-                moves_taken = random.randint(30, 200)  # Random moves between 30 and 200
-                created_at = timezone.now() - timedelta(days=random.randint(1, 365))  # Random creation date within the last year
+            for i in range(1, 51):  
+                completion_time = random.randint(60, 600)  
+                moves_taken = random.randint(30, 200) 
+                created_at = timezone.now() - timedelta(days=random.randint(1, 365)) 
 
-                # Create a JigsawPuzzleRoom instance
                 entry = JigsawPuzzleRoom(
                     mode=mode,
                     difficulty=difficulty,
@@ -663,7 +662,6 @@ def generate_test_data():
                     completion_time=completion_time,
                     moves_taken=moves_taken,
                     created_at=created_at,
-                    # Add other required fields here (e.g., players, winner, etc.)
                 )
                 test_data.append(entry)
 
@@ -671,7 +669,7 @@ def generate_test_data():
     JigsawPuzzleRoom.objects.bulk_create(test_data)
 
 def leaderboard(request):
-    difficulties = ["easy", "medium", "hard"]  # Define difficulty levels
+    difficulties = ["easy", "medium", "hard"] 
 
     # Create separate queries for each difficulty level
     leaderboard_data = {
@@ -741,17 +739,15 @@ def waiting_room(request, room_id):
         'player_role': player_role,
         'player1_ready': room.player1_ready,
         'player2_ready': room.player2_ready,
-        'js_context': js_context,  # Pass serialized JSON to the template
+        'js_context': js_context, 
     })
 
 def create_puzzle_pieces(image_path, difficulty):
     img = Image.open(image_path)
     width, height = img.size
     
-    # Define the directory where pieces will be saved
     pieces_dir = os.path.join(settings.MEDIA_ROOT, 'jigsaw_pieces')
     
-    # Ensure the directory exists
     if not os.path.exists(pieces_dir):
         os.makedirs(pieces_dir)
 
@@ -782,10 +778,9 @@ def create_puzzle_pieces(image_path, difficulty):
             initial_x = random.randint(0, 350)
             initial_y = random.randint(0, 350)
             
-            # Store the relative path that will work with MEDIA_URL
             piece_paths.append({
                 'path': absolute_path,
-                'file_name': relative_path,  # Store relative path
+                'file_name': relative_path, 
                 'x': initial_x,
                 'y': initial_y
             })

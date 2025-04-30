@@ -96,19 +96,19 @@ def verify_email(request, uidb64, token):
     try:
         uid = force_str(urlsafe_base64_decode(uidb64))
         user = User.objects.get(pk=uid)
-        print(f"Decoded UID: {uid}, User: {user}")  # Debugging
+        print(f"Decoded UID: {uid}, User: {user}")
     except (TypeError, ValueError, OverflowError, User.DoesNotExist):
         user = None
-        print("Failed to decode UID or find user.")  # Debugging
+        print("Failed to decode UID or find user.")
 
     if user is not None:
         is_token_valid = default_token_generator.check_token(user, token)
-        print(f"Token valid: {is_token_valid}")  # Debugging
+        print(f"Token valid: {is_token_valid}")
 
         if is_token_valid:
             try:
                 with transaction.atomic():
-                    print("Marking user as verified...")  # Debugging
+                    print("Marking user as verified...")
                     user.is_verified = True
                     user.save()
                     print("User marked as verified.")  # Debugging
@@ -266,7 +266,7 @@ def auth_page(request):
             if not email or not password:
                 return render(request, 'user/auth_page.html', {
                     'error_message': 'Both email and password are required.',
-                    'form': 'signin'  # Stay on the signin form
+                    'form': 'signin'
                 })
 
             # Authenticate using email

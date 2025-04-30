@@ -25,7 +25,7 @@
         <div class="logo-content">
             <div class="logo">
                 <i class="fas fa-puzzle-piece"></i>
-                <div class="logo-name">IoT Puzzle Room</div>
+                <div class="logo-name">Puzzle Room</div>
             </div>
             <button type="button" id="sidebarToggle" aria-label="Toggle Sidebar">
                 <i class="fas fa-chevron-left"></i>
@@ -51,12 +51,14 @@
             <li class="nav-item" data-tooltip="Settings">
                 <a href="{% url 'user:settings' %}" {% if request.resolver_match.url_name == 'settings' %}class="active"{% endif %}>
                     <i class="fas fa-cog"></i>
+
                     <span>Settings</span>
                 </a>
             </li>
             <li class="nav-item" data-tooltip="LeaderBoard">
                 <a href="{% url 'jigsaw_puzzle:leaderboard' %}">
                     <span>LeaderBoard</span>
+                    <i class="fas fa-trophy"></i>
                 </a>
             </li>
             <li class="nav-item" data-tooltip="Join Room">

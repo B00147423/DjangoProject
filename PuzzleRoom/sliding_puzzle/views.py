@@ -87,8 +87,6 @@ def split_image_and_create_pieces(room, image, puzzle):
     tile_width = img_width // grid_size
     tile_height = img_height // grid_size
 
-    # Create folder for storing tiles
-    # Save tiles to match frontend expectation: /media/puzzles/<room_id>/tile_0_0.png
     folder_path = os.path.join(settings.MEDIA_ROOT, 'puzzles', room.room_id)
     os.makedirs(folder_path, exist_ok=True)
 
