@@ -1,149 +1,140 @@
 {% extends 'navbar/navbar.html' %}
-{% block title %}Jigsaw Puzzle Leaderboard{% endblock %}
 {% load static %}
 
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Jigsaw Puzzle Leaderboard</title>
-    <link rel="stylesheet" href="{% static 'jigsaw_puzzle/css/leaderboard.css' %}">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
-</head>
-<body>
+{% block title %}Jigsaw Puzzle Leaderboard{% endblock %}
 
-    <h1>🏆 Jigsaw Puzzle Leaderboard</h1>
+{% block content %}
+<h1>🏆 Jigsaw Puzzle Leaderboard</h1>
 
-    <div class="leaderboard-container">
+<link rel="stylesheet" href="{% static 'jigsaw_puzzle/css/leaderboard.css' %}">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
 
-        <!-- Difficulty Selection -->
-        <div class="difficulty-tabs">
-            <div class="difficulty-tab active" onclick="showDifficulty('easy')">Easy</div>
-            <div class="difficulty-tab" onclick="showDifficulty('medium')">Medium</div>
-            <div class="difficulty-tab" onclick="showDifficulty('hard')">Hard</div>
-        </div>
+<div class="leaderboard-container">
 
-        <!-- Tabs -->
-        <div class="tabs">
-            <div class="tab active" onclick="showTab('1v1')">1v1</div>
-            <div class="tab" onclick="showTab('collaboration')">Collaboration</div>
-        </div>
-
-        <!-- Filters -->
-        <div class="filters">
-            <div class="filter active" onclick="showFilter('top10')">Top 10</div>
-            <div class="filter" onclick="showFilter('top50')">Top 50</div>
-            <div class="filter" onclick="showFilter('all')">All</div>
-        </div>
-        
-
-        <!-- Leaderboards for each difficulty -->
-        {% for difficulty, data in leaderboard_data.items %}
-            <div id="{{ difficulty }}-leaderboard" class="difficulty-leaderboard" style="display: none;">
-                <h2>{{ difficulty|title }} Difficulty</h2>
-
-                <!-- 1v1 Leaderboard -->
-                <div id="{{ difficulty }}-1v1-leaderboard" style="display: none;">
-                    <h3>{{ difficulty|title }} 1v1 Leaderboard</h3>
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>🏅 Rank</th>
-                                <th>👤 Username</th>
-                                <th>⏳ Time Taken</th>
-                                <th>🔢 Moves</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for entry in data.1v1 %}
-                                <tr class="{{ difficulty }}-1v1">
-                                    <td>{{ forloop.counter }}</td>
-                                    <td>{{ entry.winner.username }}</td>
-                                    <td>{{ entry.completion_time }} sec</td>
-                                    <td>{{ entry.moves_taken }}</td>
-                                </tr>
-                            {% empty %}
-                                <tr><td colspan="4">No 1v1 entries yet.</td></tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-
-                <!-- Collaboration Leaderboard -->
-                <div id="{{ difficulty }}-collaboration-leaderboard" style="display: none;">
-                    <h3>{{ difficulty|title }} Collaboration Leaderboard</h3>
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>🏅 Rank</th>
-                                <th>👥 Team Members</th>
-                                <th>⏳ Time Taken</th>
-                                <th>🔢 Total Moves</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for entry in data.collaboration %}
-                                <tr class="{{ difficulty }}-collaboration">
-                                    <td>{{ forloop.counter }}</td>
-                                    <td>{{ entry.player1.username }} & {{ entry.player2.username }}</td>
-                                    <td>{{ entry.completion_time }} sec</td>
-                                    <td>{{ entry.moves_taken }}</td>
-                                </tr>
-                            {% empty %}
-                                <tr><td colspan="4">No collaboration entries yet.</td></tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        {% endfor %}
+    <!-- Difficulty Selection -->
+    <div class="difficulty-tabs">
+        <div class="difficulty-tab active" onclick="showDifficulty('easy')">Easy</div>
+        <div class="difficulty-tab" onclick="showDifficulty('medium')">Medium</div>
+        <div class="difficulty-tab" onclick="showDifficulty('hard')">Hard</div>
     </div>
-</body>
-</html>
 
-    <script>
-    function showDifficulty(difficulty) {
-        document.querySelectorAll('.difficulty-tab').forEach(tab => tab.classList.remove('active'));
-        document.querySelector(`.difficulty-tab[onclick="showDifficulty('${difficulty}')"]`).classList.add('active');
+    <!-- Tabs -->
+    <div class="tabs">
+        <div class="tab active" onclick="showTab('1v1')">1v1</div>
+        <div class="tab" onclick="showTab('collaboration')">Collaboration</div>
+    </div>
 
-        document.querySelectorAll('.difficulty-leaderboard').forEach(lb => lb.style.display = 'none');
-        document.getElementById(`${difficulty}-leaderboard`).style.display = 'block';
+    <!-- Filters -->
+    <div class="filters">
+        <div class="filter active" onclick="showFilter('top10')">Top 10</div>
+        <div class="filter" onclick="showFilter('top50')">Top 50</div>
+        <div class="filter" onclick="showFilter('all')">All</div>
+    </div>
 
-        // Preserve the current tab (1v1 or collaboration)
-        let activeTab = document.querySelector('.tab.active').getAttribute("onclick").match(/'([^']+)'/)[1];
-        
-        showTab(activeTab);
-    }
+    <!-- Leaderboards for each difficulty -->
+    {% for difficulty, data in leaderboard_data.items %}
+        <div id="{{ difficulty }}-leaderboard" class="difficulty-leaderboard" style="display: none;">
+            <h2>{{ difficulty|title }} Difficulty</h2>
 
-        function showTab(tabName) {
-            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
-            document.querySelector(`.tab[onclick="showTab('${tabName}')"]`).classList.add('active');
+            <!-- 1v1 Leaderboard -->
+            <div id="{{ difficulty }}-1v1-leaderboard" style="display: none;">
+                <h3>{{ difficulty|title }} 1v1 Leaderboard</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>🏅 Rank</th>
+                            <th>👤 Username</th>
+                            <th>⏳ Time Taken</th>
+                            <th>🔢 Moves</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for entry in data.1v1 %}
+                            <tr class="{{ difficulty }}-1v1">
+                                <td>{{ forloop.counter }}</td>
+                                <td>{{ entry.winner.username }}</td>
+                                <td>{{ entry.completion_time }} sec</td>
+                                <td>{{ entry.moves_taken }}</td>
+                            </tr>
+                        {% empty %}
+                            <tr><td colspan="4">No 1v1 entries yet.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
 
-            let activeDifficulty = document.querySelector('.difficulty-tab.active').textContent.toLowerCase();
-            document.querySelectorAll(`#${activeDifficulty}-1v1-leaderboard, #${activeDifficulty}-collaboration-leaderboard`).forEach(lb => lb.style.display = 'none');
+            <!-- Collaboration Leaderboard -->
+            <div id="{{ difficulty }}-collaboration-leaderboard" style="display: none;">
+                <h3>{{ difficulty|title }} Collaboration Leaderboard</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>🏅 Rank</th>
+                            <th>👥 Team Members</th>
+                            <th>⏳ Time Taken</th>
+                            <th>🔢 Total Moves</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for entry in data.collaboration %}
+                            <tr class="{{ difficulty }}-collaboration">
+                                <td>{{ forloop.counter }}</td>
+                                <td>{{ entry.player1.username }} & {{ entry.player2.username }}</td>
+                                <td>{{ entry.completion_time }} sec</td>
+                                <td>{{ entry.moves_taken }}</td>
+                            </tr>
+                        {% empty %}
+                            <tr><td colspan="4">No collaboration entries yet.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    {% endfor %}
+</div>
 
-            document.getElementById(`${activeDifficulty}-${tabName}-leaderboard`).style.display = 'block';
-            showFilter('top10');
-        }
+<script>
+function showDifficulty(difficulty) {
+    document.querySelectorAll('.difficulty-tab').forEach(tab => tab.classList.remove('active'));
+    document.querySelector(`.difficulty-tab[onclick="showDifficulty('${difficulty}')"]`).classList.add('active');
 
-        function showFilter(filterName) {
-            document.querySelectorAll('.filter').forEach(filter => filter.classList.remove('active'));
-            document.querySelector(`.filter[onclick="showFilter('${filterName}')"]`).classList.add('active');
+    document.querySelectorAll('.difficulty-leaderboard').forEach(lb => lb.style.display = 'none');
+    document.getElementById(`${difficulty}-leaderboard`).style.display = 'block';
 
-            let activeDifficulty = document.querySelector('.difficulty-tab.active').textContent.toLowerCase();
-            let activeTab = document.querySelector('.tab.active').textContent.toLowerCase();
-            let rows = document.querySelectorAll(`.${activeDifficulty}-${activeTab}`);
+    // Preserve the current tab (1v1 or collaboration)
+    let activeTab = document.querySelector('.tab.active').getAttribute("onclick").match(/'([^']+)'/)[1];
+    
+    showTab(activeTab);
+}
 
-            rows.forEach((row, index) => {
-                if (filterName === 'top10' && index >= 10) row.style.display = 'none';
-                else if (filterName === 'top50' && index >= 50) row.style.display = 'none';
-                else row.style.display = 'table-row';
-            });
-        }
+function showTab(tabName) {
+    document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+    document.querySelector(`.tab[onclick="showTab('${tabName}')"]`).classList.add('active');
 
-        document.addEventListener("DOMContentLoaded", function () {
-            showDifficulty('easy');
-        });
-    </script>
+    let activeDifficulty = document.querySelector('.difficulty-tab.active').textContent.toLowerCase();
+    document.querySelectorAll(`#${activeDifficulty}-1v1-leaderboard, #${activeDifficulty}-collaboration-leaderboard`).forEach(lb => lb.style.display = 'none');
 
+    document.getElementById(`${activeDifficulty}-${tabName}-leaderboard`).style.display = 'block';
+    showFilter('top10');
+}
+
+function showFilter(filterName) {
+    document.querySelectorAll('.filter').forEach(filter => filter.classList.remove('active'));
+    document.querySelector(`.filter[onclick="showFilter('${filterName}')"]`).classList.add('active');
+
+    let activeDifficulty = document.querySelector('.difficulty-tab.active').textContent.toLowerCase();
+    let activeTab = document.querySelector('.tab.active').textContent.toLowerCase();
+    let rows = document.querySelectorAll(`.${activeDifficulty}-${activeTab}`);
+
+    rows.forEach((row, index) => {
+        if (filterName === 'top10' && index >= 10) row.style.display = 'none';
+        else if (filterName === 'top50' && index >= 50) row.style.display = 'none';
+        else row.style.display = 'table-row';
+    });
+}
+
+document.addEventListener("DOMContentLoaded", function () {
+    showDifficulty('easy');
+});
+</script>
+{% endblock %}

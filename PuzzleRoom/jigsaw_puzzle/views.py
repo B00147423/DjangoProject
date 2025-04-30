@@ -667,7 +667,7 @@ def generate_test_data():
 
     # Bulk create all entries
     JigsawPuzzleRoom.objects.bulk_create(test_data)
-
+@login_required
 def leaderboard(request):
     difficulties = ["easy", "medium", "hard"] 
 
