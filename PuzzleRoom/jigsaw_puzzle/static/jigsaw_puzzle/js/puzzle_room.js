@@ -43,15 +43,15 @@ document.addEventListener('DOMContentLoaded', () => {
     if (difficulty === 'easy') {
         gridRows = 4;
         gridCols = 4;
-        baseGridSize = containerSize / 4;  // Responsive size for easy
+        baseGridSize = containerSize / 4;
     } else if (difficulty === 'medium') {
         gridRows = 6;
         gridCols = 6;
-        baseGridSize = containerSize / 6;   // Responsive size for medium
+        baseGridSize = containerSize / 6; 
     } else if (difficulty === 'hard') {
         gridRows = 8;
         gridCols = 8;
-        baseGridSize = containerSize / 8;   // Responsive size for hard
+        baseGridSize = containerSize / 8;  
     } else {
         // Default
         gridRows = 4;

@@ -8,7 +8,7 @@
 {% endif %}
 <form method="post">
     {% csrf_token %}
-    {{ form.as_p }}  <!-- This renders the form, including the current email value -->
+    {{ form.as_p }}
     <button type="submit">Update Email</button>
 </form>
 <a href="#" class="settings-link" id="back-to-settings-email">Back to Settings</a>

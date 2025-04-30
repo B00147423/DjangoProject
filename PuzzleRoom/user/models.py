@@ -3,7 +3,7 @@ from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, Permis
 from django.db import models
 from django.utils import timezone
 from django.db import models
-from django.conf import settings  # Use this to reference your custom User model
+from django.conf import settings 
 
 class UserManager(BaseUserManager):
     def create_user(self, email, username, password=None, is_guest=False, **extra_fields):
@@ -47,7 +47,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     is_guest = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
-    is_verified = models.BooleanField(default=False)  # Add this line
+    is_verified = models.BooleanField(default=False)
     USERNAME_FIELD = 'username'
     REQUIRED_FIELDS = []
 

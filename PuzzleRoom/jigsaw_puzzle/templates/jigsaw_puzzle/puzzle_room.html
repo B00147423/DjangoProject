@@ -90,24 +90,24 @@
 
             // Read URL params to check the state (solo mode or split-screen)
             const urlParams = new URLSearchParams(window.location.search);
-            let isSoloMode = urlParams.get('solo') === 'true'; // Read the 'solo' parameter
+            let isSoloMode = urlParams.get('solo') === 'true';
 
             // Apply the initial layout based on URL param
             if (isSoloMode) {
                 gameArea.classList.add('solo-mode');
                 player1Container.classList.remove('hidden');
                 player2Container.classList.add('hidden');
-                toggleButton.textContent = "Show Both Players"; // Update button text
+                toggleButton.textContent = "Show Both Players"; 
             } else {
                 gameArea.classList.remove('solo-mode');
                 player1Container.classList.remove('hidden');
                 player2Container.classList.remove('hidden');
-                toggleButton.textContent = "Show Only My Side"; // Update button text
+                toggleButton.textContent = "Show Only My Side"; 
             }
 
             // Toggle event listener
             toggleButton.addEventListener('click', () => {
-                isSoloMode = !isSoloMode; // Toggle between solo and split-screen mode
+                isSoloMode = !isSoloMode;
 
                 // Update the URL without refreshing the page
                 const newUrl = new URL(window.location);
@@ -118,7 +118,6 @@
                 }
                 window.history.pushState({}, '', newUrl); 
 
-                // Apply the layout changes based on the toggle
                 if (isSoloMode) {
                     gameArea.classList.add('solo-mode');
                     player1Container.classList.remove('hidden');

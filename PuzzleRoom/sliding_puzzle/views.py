@@ -103,12 +103,9 @@ def split_image_and_create_pieces(room, image, puzzle):
 
             tile = image.crop((left, upper, right, lower))
 
-            # Save the tile locally
             filename = f"tile_{row}_{col}.png"
             file_path = os.path.join(folder_path, filename)
             tile.save(file_path)
-
-            # Relative path to save in model (for serving later)
             relative_path = os.path.join('puzzles', 'pieces', room.room_id, filename)
 
             PuzzlePiece.objects.create(

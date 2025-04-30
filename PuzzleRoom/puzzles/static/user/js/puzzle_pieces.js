@@ -3,8 +3,8 @@
 document.addEventListener('DOMContentLoaded', () => {
     const pieces = document.querySelectorAll('.puzzle-piece');
     const dropArea = document.getElementById('dropArea');
-    const roomId = dropArea.getAttribute('data-room-id');  // Fetch roomId from data attribute
-    const csrftoken = document.querySelector('[name=csrf-token]').content;  // Fetch CSRF token from meta tag
+    const roomId = dropArea.getAttribute('data-room-id');
+    const csrftoken = document.querySelector('[name=csrf-token]').content;
 
     // Handle drag and drop functionality
     pieces.forEach(piece => {

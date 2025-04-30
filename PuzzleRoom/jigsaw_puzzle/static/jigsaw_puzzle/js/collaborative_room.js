@@ -22,7 +22,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // EXACT MATCH from puzzle_room.js for grid calculations
     const container = document.getElementById('grid-container').parentElement;
     const containerWidth = container.clientWidth;
-    const containerSize = Math.min(400, containerWidth * 0.8); // Match puzzle_room.js calculation
+    const containerSize = Math.min(400, containerWidth * 0.8);
 
     let gridRows, gridCols;
     if (difficulty === 'easy') {
@@ -113,17 +113,15 @@ document.addEventListener("DOMContentLoaded", () => {
         };
     
         socket.onclose = () => {
-            console.error("⚠️ WebSocket disconnected. Reconnecting...");
             setTimeout(initializeWebSocket, 1000); // Retry connection every 1 second
         };
     
         socket.onerror = (error) => {
-            socket.close(); // Close the socket on error
+            socket.close(); 
         };
 
         socket.onmessage = (event) => {
             const data = JSON.parse(event.data);
-            console.log("🔄 Message received:", data);
     
             if (data.type === "piece_move") {
                 placePieceOnGrid(data.piece_id, data.new_x, data.new_y, data.image_url);
@@ -222,8 +220,7 @@ document.addEventListener("DOMContentLoaded", () => {
             pieceElement.classList.remove("locked");
             pieceElement.removeAttribute("data-locked-by");
             pieceElement.style.opacity = "1";
-    
-            console.log(`🔓 Piece ${pieceId} unlocked`);
+
         } 
     }
     
@@ -305,7 +302,6 @@ document.addEventListener("DOMContentLoaded", () => {
     initializeWebSocket();
 
     function handlePieceRemove(pieceId) {
-        // Remove the piece from the grid for everyone
         removePieceFromGrid(pieceId);
     
         // Re-add the piece to the sidebar, making it available again
@@ -363,7 +359,7 @@ document.addEventListener("DOMContentLoaded", () => {
         messageElement.classList.add("chat-message");
         messageElement.innerHTML = `<span class="username">${username}</span>: ${message}`;
         chatBox.appendChild(messageElement);
-        chatBox.scrollTop = chatBox.scrollHeight; // Auto-scroll to the bottom
+        chatBox.scrollTop = chatBox.scrollHeight; 
     }
 
     // Send a chat message
