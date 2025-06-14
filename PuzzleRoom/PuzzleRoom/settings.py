@@ -15,9 +15,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
-SECRET_KEY = 'django-insecure-)ytjp2gmp_r3psh*=8swqdck-lvhn(4h5)5iiblap16c5ye9jh'
+SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-)ytjp2gmp_r3psh*=8swqdck-lvhn(4h5)5iiblap16c5ye9jh')
 
-DEBUG = True
+DEBUG = os.getenv('DEBUG', 'True') == 'True'
 
 ALLOWED_HOSTS = ["*"]
 
@@ -113,11 +113,11 @@ WSGI_APPLICATION = 'PuzzleRoom.wsgi.application'
 DATABASES = {
    'default': {
        'ENGINE': 'django.db.backends.postgresql',
-       'NAME': 'puzzleRoom01',
-       'USER': 'postgres',
-       'PASSWORD': 'pass',
-       'HOST': '127.0.0.1',
-       'PORT': '5432',
+       'NAME': os.getenv('DB_NAME', 'puzzleRoom01'),
+       'USER': os.getenv('DB_USER', 'postgres'),
+       'PASSWORD': os.getenv('DB_PASSWORD', 'pass'),
+       'HOST': os.getenv('DB_HOST', '127.0.0.1'),
+       'PORT': os.getenv('DB_PORT', '5432'),
    }
 }
 
