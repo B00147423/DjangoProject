@@ -93,7 +93,7 @@ def collaborative_jigsaw_room(request, room_id):
             'grid_x': piece.grid_x,
             'grid_y': piece.grid_y,
         }
-        for piece in pieces if piece.image_piece  # Only include pieces with valid images
+        for piece in pieces if piece.image_piece 
     ]
 
     chat_messages = [
@@ -189,8 +189,8 @@ def create_jigsaw_room(request):
             os.makedirs(pieces_dir, exist_ok=True)
 
             # Calculate container size and base grid size consistently with frontend
-            container_size = min(800, int(width * 0.9))  # Use 90% of image width, capped at 800px for larger screens
-            base_grid_size = container_size // grid_size  # This will give us proportional sizes for each difficulty
+            container_size = min(800, int(width * 0.9)) 
+            base_grid_size = container_size // grid_size
 
             if puzzle_room.mode == 'collaborative':
                 # Create one set of pieces for collaborative mode

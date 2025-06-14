@@ -425,17 +425,13 @@ class PuzzleConsumer(AsyncWebsocketConsumer):
         expected_grid_x = piece.grid_x
         expected_grid_y = piece.grid_y
 
-        print(f"🔍 Piece {piece_id} | Current grid: ({current_grid_x}, {current_grid_y}) | Expected grid: ({expected_grid_x}, {expected_grid_y})")
-
         # Compare the rounded grid positions
         is_correct = (current_grid_x == expected_grid_x and current_grid_y == expected_grid_y)
 
         if is_correct:
             piece.is_correct = True
-            print(f"Piece {piece_id} is in the correct grid cell!")
         else:
             piece.is_correct = False
-            print(f"Piece {piece_id} is NOT in the correct grid cell!")
         
         piece.save()
         return piece.is_correct
@@ -534,7 +530,7 @@ class PuzzleConsumer(AsyncWebsocketConsumer):
         room.completed = True
         room.completion_time = int(elapsed_time)
         await database_sync_to_async(room.save)()
-        logger.info(f"📡 Sending puzzle completion event: {elapsed_time} seconds, {moves_taken} moves")
+        logger.info(f" Sending puzzle completion event: {elapsed_time} seconds, {moves_taken} moves")
 
         await self.channel_layer.group_send(
             self.room_group_name,
