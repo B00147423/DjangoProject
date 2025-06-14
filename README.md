@@ -6,7 +6,7 @@ A real-time multiplayer puzzle game where players can compete or collaborate to 
 
 - Real-time multiplayer gameplay
 - 1v1 competitive mode
-- Drag-and-drop puzzle mechanics
+
 - Live score tracking
 - User profiles and authentication
 - Multiple puzzle types and difficulty levels
